@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITSO Obermaier - Web Oficial</title>
+    
+    <!-- Fuentes y Estilos -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Import Map para dependencias -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.263.1",
+            "firebase/app": "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"
+        }
+    }
+    </script>
+    
+    <!-- Babel para transformar JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; overflow-x: hidden; }
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Estilos de Animación Globales */
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
+        @keyframes title-fade { 0% { opacity: 0; transform: translateY(20px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-20px); } }
+        @keyframes wiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes tilt { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(1deg); } 75% { transform: rotate(-1deg); } }
+        @keyframes loading-bar { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes fade-in-down { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
+        
+        .animate-blink { animation: blink 1s step-end infinite; }
+        .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+        .animate-title-switch { animation: title-fade 4s ease-in-out infinite; }
+        .animate-wiggle { animation: wiggle 0.4s ease-in-out; }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-tilt { animation: tilt 5s infinite linear; }
+        .animate-loading { animation: loading-bar 2s ease-in-out forwards; }
+        .animate-fade-in-down { animation: fade-in-down 0.3s ease-out; }
+        
+        .nav-glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); }
+        .input-glass { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); }
+        .input-glass:focus { background: rgba(0, 0, 0, 0.5); border-color: rgba(59, 130, 246, 0.5); outline: none; }
+        .custom-checkbox:checked + div { background-color: rgba(37, 99, 235, 0.2); border-color: #3b82f6; }
+
+        /* Estilos para incrustaciones responsivas */
+        .aspect-video iframe { width: 100%; height: 100%; border: none; }
+
+        @media print {
+            body * { visibility: hidden !important; }
+            #printable-area, #printable-area * { visibility: visible !important; }
+            #printable-area { 
+            position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; 
+            background: white !important; color: black !important; padding: 0 !important; margin: 0 !important;
+            }
+            .no-print { display: none !important; }
+            .print-header { display: block !important; border-bottom: 2px solid #000; margin-bottom: 30px; padding-bottom: 20px; }
+            table { width: 100% !important; border-collapse: collapse !important; margin-top: 10px !important; }
+            th, td { border: 1px solid #ddd !important; padding: 12px !important; color: black !important; background: white !important; font-size: 10pt !important; }
+            th { background: #f4f4f4 !important; font-weight: bold !important; text-transform: uppercase !important; }
+            .category-tag { border: 1px solid #000 !important; color: black !important; background: #eee !important; padding: 2px 6px !important; border-radius: 4px !important; font-weight: bold !important; }
+            h3, p { color: black !important; }
+            .bg-slate-900, .bg-slate-950, .bg-black { background: white !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef, useCallback } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+          // Navegación y UI General
+          BookOpen, Users, Award, Calendar, Phone, MapPin, Mail, Menu, X, 
+          ChevronRight, Laptop, HeartPulse, LogIn, ArrowRight, 
+          Facebook, Instagram, Youtube, Cpu, Wifi, Tv, Zap, Globe,
+          Play, Rocket, Home, ExternalLink,
+          CheckCircle, Star, Send, Briefcase, Layers, School,
+          Settings, Database, Trash2, LogOut, ShieldAlert, ListFilter,
+          AtSign, Printer, Search, CalendarRange,
+          User, Lock, Edit3, Save, XCircle, CheckSquare, ShieldCheck,
+          AlertCircle, Key, UserCheck, Table as TableIcon,
+          GraduationCap, ClipboardList, RefreshCw, UserPlus, BookPlus,
+          FileCog, Eye, FileEdit, Shield, FileText, LayoutGrid, Library, PlusCircle, BookOpenCheck,
+          HelpCircle, Link as LinkIcon, Download, Video, MonitorPlay, Router, Server, Radio, Network,
+          BadgeCheck, Signal, Loader2, Info, XOctagon
+        } from 'lucide-react';
+
+        // --- IMPORTACIONES DE FIREBASE (PRODUCCIÓN) ---
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+        import { 
+          getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query 
+        } from 'firebase/firestore';
+
+        // --- DATOS ESTÁTICOS ---
+        const TYPING_TEXTS = ["INDUSTRIA 4.0", "AUTOMATIZACIÓN", "ROBÓTICA", "TELECOMUNICACIONES"];
+        const CONTACT_HEADLINES = [
+          { main: "¿LISTO PARA EL", highlight: "RETO?" },
+          { main: "REGÍSTRATE PARA MÁS", highlight: "INFORMACIÓN" }
+        ];
+
+        const TEACHER_SPECIALTIES = [
+          { id: 'info', name: 'Informática Industrial', type: 'Semestre', count: 6 },
+          { id: 'robo', name: 'Robótica y Automatización', type: 'Año', count: 3 },
+          { id: 'redes', name: 'Redes y Telecomunicaciones', type: 'Año', count: 3 }
+        ];
+
+        const STUDENT_CAREERS = [
+          { id: 'info', name: 'Informática Industrial', type: 'Semestre', count: 6, icon: <Laptop size={24} /> },
+          { id: 'robo', name: 'Robótica y Automatización', type: 'Año', count: 3, icon: <Cpu size={24} /> },
+          { id: 'redes', name: 'Redes y Telecomunicaciones', type: 'Año', count: 3, icon: <Wifi size={24} /> }
+        ];
+
+        const VIDEOS = [
+          "https://drive.google.com/file/d/104eNKgf3eURpiD4ehyfkp7MT0xkLdHP3/preview",
+          "https://drive.google.com/file/d/1RxWN_9dKhz0l6NTG-hSEW3tvn7njaOW9/preview",
+          "https://drive.google.com/file/d/17E18GOWvFcT4xjOqVIdIpAXl8NWA2vvu/preview",
+          "https://drive.google.com/file/d/1sBnuRDPdMOrfwclkWsY2NcWCBw70yeDf/preview",
+          "https://drive.google.com/file/d/1dVHanc3-AFUThlzuVWmKvVN_Vkh5GQx7/preview",
+          "https://drive.google.com/file/d/1OLYwdaQ_qmcy7_0itY_jorUyfnNBRd11/preview",
+          "https://drive.google.com/file/d/1hWGebyTuqcZwAh67Ejd4uPRWN2kedVVd/preview",
+          "https://drive.google.com/file/d/10YZosWdJzWQJukzU-UvZVe_8DYhJJqNU/preview",
+          "https://drive.google.com/file/d/1YIVaja7rD3CI40ENNeN6HY_Ou_7nyeJ0/preview",
+          "https://drive.google.com/file/d/1DZuub9-fRwxm5DfXHOhb2Km_8NRq8L5z/preview",
+          "https://drive.google.com/file/d/1DVrISjmQxRQAs808THUSBbE8vb-Fesye/preview",
+          "https://drive.google.com/file/d/1xZs0i3gycsAyk1vRcfa2ssnAfC8Hf8pJ/preview",
+          "https://drive.google.com/file/d/10G1obRyNDSIsX6MFtDZZUi30rO2Td6ka/preview",
+          "https://drive.google.com/file/d/1WVBdESI3GwElxYX9l8Br_ZPA5eUxoe3i/preview",
+          "https://drive.google.com/file/d/1iH2xJenH2mf2LrZQs84vjThgbbdUEce-/preview"
+        ];
+
+        const NAV_ITEMS = [
+          { id: 'inicio', label: 'Inicio', icon: <Home size={18} /> },
+          { id: 'certificaciones', label: 'Certificaciones', icon: <Award size={18} /> },
+          { id: 'legado', label: 'Legado', icon: <BookOpen size={18} /> },
+          { id: 'carreras', label: 'Carreras', icon: <Cpu size={18} /> },
+          { id: 'makers', label: 'Makers', icon: <Rocket size={18} /> },
+          { id: 'media', label: 'Media', icon: <Tv size={18} /> },
+          { id: 'por-que-itso', label: 'Más Info', icon: <Star size={18} /> },
+          { id: 'contacto', label: 'Contacto', icon: <Mail size={18} /> },
+        ];
+
+        const ITSO_LOGO_URL = "https://drive.google.com/thumbnail?id=1yxhs3ovL9kqoeUOZHECnhtZEYZ1ANdWN&sz=w200";
+
+        // --- COMPONENTES AUXILIARES ---
+
+        const ToastContext = React.createContext(null);
+
+        const ToastContainer = ({ toasts, removeToast }) => (
+          <div className="fixed bottom-6 right-6 z-[10000] flex flex-col gap-2 pointer-events-none">
+            {toasts.map(toast => (
+              <div 
+                key={toast.id} 
+                className={`
+                  pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl backdrop-blur-md border border-white/10 text-white min-w-[320px] max-w-md animate-in slide-in-from-right-full fade-in duration-300
+                  ${toast.type === 'success' ? 'bg-emerald-600/90' : toast.type === 'error' ? 'bg-red-600/90' : 'bg-blue-600/90'}
+                `}
+              >
+                {toast.type === 'success' ? <CheckCircle size={20} /> : toast.type === 'error' ? <XOctagon size={20} /> : <Info size={20} />}
+                <div className="flex-1">
+                  <p className="font-bold text-sm">{toast.title}</p>
+                  {toast.message && <p className="text-xs opacity-90 mt-0.5">{toast.message}</p>}
+                </div>
+                <button onClick={() => removeToast(toast.id)} className="text-white/60 hover:text-white"><X size={16}/></button>
+              </div>
+            ))}
+          </div>
+        );
+
+        const MoodleIcon = ({ className }) => (
+          <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+            <path d="M21.9 2H2.1C0.9 2 0 2.9 0 4.1v15.8C0 21.1 0.9 22 2.1 22h19.8c1.2 0 2.1-0.9 2.1-2.1V4.1C24 2.9 23.1 2 21.9 2zM18.6 17h-2.5v-4.8c0-1.6-0.6-2.3-1.9-2.3-1.4 0-2.3 0.9-2.3 2.7v4.4H9.4v-4.8c0-1.6-0.6-2.3-1.9-2.3-1.4 0-2.3 0.9-2.3 2.7v4.4H2.7V8.5h2.5v1.2c0.8-1 1.9-1.5 3.3-1.5 1.4 0 2.5 0.5 3.1 1.7 0.8-1.2 2-1.7 3.5-1.7 2.6 0 3.5 1.5 3.5 4.3V17z" />
+          </svg>
+        );
+
+        const useIntersectionObserver = (options = {}) => {
+          const [isIntersecting, setIsIntersecting] = useState(false);
+          const elementRef = useRef(null);
+          
+          useEffect(() => {
+            const node = elementRef.current;
+            if (!node) return;
+            
+            const observer = new IntersectionObserver(([entry]) => {
+              if (entry.isIntersecting) {
+                setIsIntersecting(true);
+                observer.disconnect(); 
+              }
+            }, { threshold: 0.1, ...options });
+
+            observer.observe(node);
+            return () => observer.disconnect();
+          }, []); 
+
+          return [elementRef, isIntersecting];
+        };
+
+        const useCounter = (end, duration = 2000, startAnimation) => {
+          const [count, setCount] = useState(0);
+          useEffect(() => {
+            if (!startAnimation) return;
+            let startTime = null;
+            let animationFrameId;
+            const animate = (currentTime) => {
+              if (!startTime) startTime = currentTime;
+              const progress = Math.min((currentTime - startTime) / duration, 1);
+              const easeOutQuad = 1 - Math.pow(1 - progress, 3);
+              setCount(Math.floor(easeOutQuad * end));
+              if (progress < 1) animationFrameId = requestAnimationFrame(animate);
+            };
+            animationFrameId = requestAnimationFrame(animate);
+            return () => cancelAnimationFrame(animationFrameId);
+          }, [end, duration, startAnimation]);
+          return count;
+        };
+
+        const FadeInSection = ({ children, delay = 0, className = "" }) => {
+          const [ref, isVisible] = useIntersectionObserver();
+          return (
+            <div
+              ref={ref}
+              className={`transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} ${className}`}
+              style={{ transitionDelay: `${delay}ms` }}
+            >
+              {children}
+            </div>
+          );
+        };
+
+        const ParticleBackground = () => (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 no-print">
+            {[...Array(20)].map((_, i) => (
+              <div 
+                key={i}
+                className="absolute rounded-full bg-white opacity-[0.03] animate-pulse"
+                style={{
+                  width: `${Math.random() * 300 + 50}px`,
+                  height: `${Math.random() * 300 + 50}px`,
+                  top: `${Math.random() * 100}%`,
+                  left: `${Math.random() * 100}%`,
+                  animationDuration: `${Math.random() * 10 + 5}s`,
+                }}
+              />
+            ))}
+          </div>
+        );
+
+        const Modal = ({ children, title, onClose, accent, wide = false, zIndex = "z-[400]" }) => {
+          const accentColors = {
+            blue: 'from-blue-600 to-blue-400',
+            orange: 'from-orange-600 to-orange-400',
+            amber: 'from-amber-600 to-amber-400',
+            purple: 'from-purple-600 to-purple-400',
+            red: 'from-red-600 to-red-400',
+            green: 'from-green-600 to-green-400',
+            indigo: 'from-indigo-600 to-indigo-400',
+            yellow: 'from-yellow-500 to-yellow-300'
+          };
+          const gradientClass = accentColors[accent] || accentColors.blue;
+
+          useEffect(() => {
+            const handleEsc = (event) => {
+              if (event.key === 'Escape') onClose();
+            };
+            window.addEventListener('keydown', handleEsc);
+            document.body.style.overflow = 'hidden'; 
+            return () => {
+              window.removeEventListener('keydown', handleEsc);
+              document.body.style.overflow = 'unset'; 
+            };
+          }, [onClose]);
+
+          return (
+            <div className={`fixed inset-0 ${zIndex} flex items-center justify-center bg-black/95 backdrop-blur-md p-4 overflow-y-auto no-print`}>
+              <div className={`bg-slate-900 border border-slate-700 rounded-[3rem] w-full ${wide ? 'max-w-4xl' : 'max-w-md'} overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-300 my-auto`} onClick={(e) => e.stopPropagation()}>
+                <div className={`h-2 w-full bg-gradient-to-r ${gradientClass}`}></div>
+                <div className="p-10 md:p-14">
+                  <div className="flex justify-between items-center mb-10">
+                    <h3 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter">{title}</h3>
+                    <button onClick={onClose} type="button" aria-label="Cerrar" className="p-3 rounded-full hover:bg-white/5 text-slate-400 transition-all hover:text-white active:scale-90">
+                      <X size={32} />
+                    </button>
+                  </div>
+                  {children}
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const CounterCard = ({ end, suffix, label }) => {
+          const [ref, isVisible] = useIntersectionObserver();
+          const count = useCounter(end, 2000, isVisible);
+          return (
+            <div ref={ref} className="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 text-center hover:border-slate-700 transition-all group backdrop-blur-sm cursor-default">
+               <div className="text-4xl md:text-5xl font-black text-white group-hover:text-red-500 transition-colors mb-1 tracking-tighter uppercase">{count}{suffix}</div>
+               <div className="text-[10px] text-red-500 font-black uppercase tracking-widest group-hover:text-white transition-colors">{label}</div>
+            </div>
+          );
+        };
+
+        const CareerCard = ({ icon, title, desc, colorClass, shadowClass, features }) => (
+          <FadeInSection className="p-10 rounded-[3.5rem] bg-slate-800/80 border border-slate-700/50 group relative overflow-hidden transition-all hover:bg-slate-800 hover:border-slate-500 shadow-2xl">
+            <div className={`w-16 h-16 ${colorClass} rounded-2xl flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform ${shadowClass}`}>
+              {icon}
+            </div>
+            <h3 className="text-4xl font-black text-white mb-4 tracking-tight uppercase">{title}</h3>
+            <p className="text-slate-400 mb-10 leading-relaxed text-lg font-medium">{desc}</p>
+            <div className="flex flex-wrap gap-2">
+              {features.map(f => (
+                <span key={f} className="text-[10px] font-black px-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 uppercase tracking-widest">
+                  {f}
+                </span>
+              ))}
+            </div>
+          </FadeInSection>
+        );
+
+        // --- COMPONENTE PRINCIPAL ---
+
+        const App = () => {
+          // --- ESTADOS GLOBALES ---
+          const [registrations, setRegistrations] = useState([]);
+          const [courses, setCourses] = useState([]);
+          const [user, setUser] = useState(null); 
+          const [isFirebaseReady, setIsFirebaseReady] = useState(false);
+          const [toasts, setToasts] = useState([]);
+
+          // --- HELPERS DE NOTIFICACIÓN ---
+          const addToast = useCallback((type, title, message = '') => {
+            const id = Date.now();
+            setToasts(prev => [...prev, { id, type, title, message }]);
+            setTimeout(() => {
+              setToasts(prev => prev.filter(t => t.id !== id));
+            }, 5000);
+          }, []);
+
+          const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
+
+          // Inicialización de Firebase
+          useEffect(() => {
+            const initFirebase = async () => {
+              try {
+                // --- CONFIGURACIÓN DE FIREBASE (Reemplazar con tus datos reales) ---
+        	const firebaseConfig = {
+            		apiKey: "AIzaSyCKTS1n4bQwLDd-mmXXh3J-SFxnFY8iOc0",
+            		authDomain: "itsoaulacenter.firebaseapp.com",
+            		projectId: "itsoaulacenter",
+            		storageBucket: "itsoaulacenter.firebasestorage.app",	
+			messagingSenderId: "100200371050",
+            		appId: "1:100200371050:web:50dbcbfd16d3f554264b13"
+        		};
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                  await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                  await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (u) => {
+                  setUser(u);
+                  setIsFirebaseReady(!!u);
+                });
+
+              } catch (e) {
+                console.error("Error inicializando Firebase:", e);
+                addToast('error', 'Error de Sistema', 'No se pudo conectar con el servidor.');
+              }
+            };
+            initFirebase();
+          }, [addToast]);
+
+          // Fetch de Datos desde Firestore
+          useEffect(() => {
+            if (!user) return;
+            
+            const db = getFirestore();
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+            let unsubscribeReg = () => {};
+            let unsubscribeCourses = () => {};
+
+            try {
+                const regQuery = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
+                unsubscribeReg = onSnapshot(regQuery, (snapshot) => {
+                  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                  data.sort((a, b) => {
+                    const dateA = a.rawDate ? new Date(a.rawDate) : new Date(0);
+                    const dateB = b.rawDate ? new Date(b.rawDate) : new Date(0);
+                    return dateB - dateA;
+                  });
+                  setRegistrations(data);
+                }, (error) => {
+                  console.error("Error fetching registrations:", error);
+                  addToast('error', 'Error de Sincronización', 'Falló la carga de registros.');
+                });
+
+                const courseQuery = collection(db, 'artifacts', appId, 'public', 'data', 'courses');
+                unsubscribeCourses = onSnapshot(courseQuery, (snapshot) => {
+                   const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                   setCourses(data);
+                }, (error) => console.error("Error fetching courses:", error));
+
+            } catch (e) {
+                console.error("Error setting up listeners:", e);
+            }
+
+            return () => {
+              unsubscribeReg();
+              unsubscribeCourses();
+            };
+          }, [user, addToast]); 
+
+          // Sincronización Reactiva del Usuario Actual
+          useEffect(() => {
+            if (currentUser && registrations.length > 0) {
+              const updated = registrations.find(r => r.id === currentUser.id);
+              if (updated && JSON.stringify(updated) !== JSON.stringify(currentUser)) {
+                setCurrentUser(updated);
+              }
+            }
+          }, [registrations, currentUser]); 
+
+          // Estados UI
+          const [isMenuOpen, setIsMenuOpen] = useState(false);
+          const [isScrolled, setIsScrolled] = useState(false);
+          const [activeTab, setActiveTab] = useState('inicio');
+          
+          // Modales
+          const [showLoginModal, setShowLoginModal] = useState(false);
+          const [showRegisterModal, setShowRegisterModal] = useState(false); 
+          const [showTeacherModal, setShowTeacherModal] = useState(false); 
+          const [showMoodleModal, setShowMoodleModal] = useState(false);
+          const [showAdminModal, setShowAdminModal] = useState(false); 
+          const [showEditModal, setShowEditModal] = useState(false);
+          const [showUserDashboard, setShowUserDashboard] = useState(false);
+          const [showTeacherTools, setShowTeacherTools] = useState({ createContact: false, createMoodle: false, manageCourses: false }); 
+          const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+          const [showCourseModal, setShowCourseModal] = useState(false); 
+          const [viewingCourse, setViewingCourse] = useState(null); 
+          const [showSpotlight, setShowSpotlight] = useState(false); 
+
+          // Estados de Carga
+          const [isSubmitting, setIsSubmitting] = useState(false);
+
+          // Animaciones y Login
+          const [textIndex, setTextIndex] = useState(0);
+          const [displayText, setDisplayText] = useState('');
+          const [isDeleting, setIsDeleting] = useState(false);
+          const [isRedirecting, setIsRedirecting] = useState(false); 
+          const [loginStatusMessage, setLoginStatusMessage] = useState('');
+          const [contactTitleIndex, setContactTitleIndex] = useState(0);
+          
+          // Sesión Activa
+          const [currentUser, setCurrentUser] = useState(null);
+          const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+          const [adminCredentials, setAdminCredentials] = useState({ email: '', password: '' });
+          
+          // Filtros
+          const [adminViewMode, setAdminViewMode] = useState('REGISTROS'); 
+          const [adminFilter, setAdminFilter] = useState('TODOS'); 
+          const [adminSearch, setAdminSearch] = useState('');
+          const [adminDateStart, setAdminDateStart] = useState('');
+          const [adminDateEnd, setAdminDateEnd] = useState('');
+
+          const [userViewMode, setUserViewMode] = useState('LISTA');
+          const [userSearch, setUserSearch] = useState('');
+          const [userDateStart, setUserDateStart] = useState('');
+          const [userDateEnd, setUserDateEnd] = useState('');
+          
+          // Edición
+          const [editingUser, setEditingUser] = useState(null);
+          const [permissionsUser, setPermissionsUser] = useState(null);
+          const [editingCourse, setEditingCourse] = useState(null); 
+
+          // Formularios
+          const [moodleForm, setMoodleForm] = useState({ career: '', period: '' });
+          const [loginForm, setLoginForm] = useState({ user: '', pass: '' });
+
+          // --- EFECTOS UI ---
+          useEffect(() => {
+            const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+            link.type = 'image/png';
+            link.rel = 'icon';
+            link.href = ITSO_LOGO_URL;
+            document.getElementsByTagName('head')[0].appendChild(link);
+          }, []);
+
+          useEffect(() => {
+            const handleScroll = () => {
+              setIsScrolled(window.scrollY > 50);
+              const sections = NAV_ITEMS.map(item => document.getElementById(item.id));
+              const scrollPosition = window.scrollY + 120;
+              sections.forEach((section) => {
+                if (section) {
+                  if (scrollPosition >= section.offsetTop && scrollPosition < section.offsetTop + section.offsetHeight) {
+                    setActiveTab(section.id);
+                  }
+                }
+              });
+            };
+            window.addEventListener('scroll', handleScroll, { passive: true });
+            return () => window.removeEventListener('scroll', handleScroll);
+          }, []);
+
+          useEffect(() => {
+            const currentFullText = TYPING_TEXTS[textIndex];
+            const handleTyping = () => {
+              if (!isDeleting) {
+                setDisplayText(currentFullText.substring(0, displayText.length + 1));
+                if (displayText.length === currentFullText.length) setTimeout(() => setIsDeleting(true), 1500); 
+              } else {
+                setDisplayText(currentFullText.substring(0, displayText.length - 1));
+                if (displayText.length === 0) {
+                  setIsDeleting(false);
+                  setTextIndex((prev) => (prev + 1) % TYPING_TEXTS.length);
+                }
+              }
+            };
+            const timer = setTimeout(handleTyping, isDeleting ? 50 : 150);
+            return () => clearTimeout(timer);
+          }, [displayText, isDeleting, textIndex]);
+
+          useEffect(() => {
+            const interval = setInterval(() => setContactTitleIndex((prev) => (prev + 1) % CONTACT_HEADLINES.length), 4000);
+            return () => clearInterval(interval);
+          }, []);
+
+          const scrollToSection = (id) => {
+            setActiveTab(id);
+            setIsMenuOpen(false);
+            const element = document.getElementById(id);
+            if (element) {
+              const offset = 80; 
+              const bodyRect = document.body.getBoundingClientRect().top;
+              const elementRect = element.getBoundingClientRect().top;
+              const elementPosition = elementRect - bodyRect;
+              const offsetPosition = elementPosition - offset;
+              window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+            }
+          };
+
+          // --- MANEJADORES ---
+
+          const resetForms = () => {
+            setLoginForm({ user: '', pass: '' });
+            setLoginStatusMessage('');
+            setIsRedirecting(false);
+            setIsSubmitting(false); 
+          };
+
+          const handleOpenPortal = (e) => {
+            if (e && e.preventDefault) e.preventDefault();
+            if (e && e.stopPropagation) e.stopPropagation();
+            setIsMenuOpen(false);
+            if (currentUser) {
+              setShowUserDashboard(true);
+            } else {
+              resetForms(); 
+              setTimeout(() => { setShowLoginModal(true); }, 50); 
+            }
+          };
+
+          const handleOpenAdmin = (e) => {
+            if (e && e.preventDefault) e.preventDefault();
+            if (e && e.stopPropagation) e.stopPropagation();
+            setIsMenuOpen(false);
+            if (!isAdminLoggedIn) resetForms();
+            setTimeout(() => { setShowAdminModal(true); }, 50);
+          };
+
+          const handleScrollToTutorial = () => {
+            const tutorialSection = document.getElementById('tutorial-section');
+            if (tutorialSection) {
+              tutorialSection.scrollIntoView({ behavior: 'smooth' });
+              setShowSpotlight(true);
+            }
+          };
+
+          const generatePassword = (name, phone) => {
+            const initials = name 
+              ? name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
+              : 'XX';
+            const phoneCode = phone 
+              ? phone.replace(/\D/g, '').slice(-2) 
+              : '00';
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            let randomSuffix = "";
+            for(let i=0; i<2; i++) randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+            return `ITSO-${initials}${phoneCode}${randomSuffix}`;
+          };
+
+          const handleAcademicAccess = (e) => {
+            e.preventDefault();
+            setLoginStatusMessage('');
+            setIsSubmitting(true); 
+
+            setTimeout(() => {
+                // Backdoor Admin
+                if (loginForm.user === "copauyunifreddy@gmail.com" && loginForm.pass === "*60Copa11") {
+                  setIsAdminLoggedIn(true);
+                  setShowAdminModal(true);
+                  setShowLoginModal(false);
+                  resetForms();
+                  addToast('success', 'Bienvenido Admin', 'Panel de Control desbloqueado.');
+                  return;
+                }
+
+                const foundUser = registrations.find(u => {
+                  const nameMatch = u.name.toLowerCase().trim() === loginForm.user.toLowerCase().trim() ||
+                                    (u.email && u.email.toLowerCase().trim() === loginForm.user.toLowerCase().trim());
+                  const passMatch = u.password 
+                    ? u.password === loginForm.pass.trim() 
+                    : u.phone === loginForm.pass.trim(); 
+                  return nameMatch && passMatch;
+                });
+
+                if (foundUser) {
+                  if (foundUser.status === 'VALIDADO') {
+                    setIsRedirecting(true); 
+                    setTimeout(() => {
+                        setCurrentUser(foundUser);
+                        setShowLoginModal(false);
+                        setShowUserDashboard(true);
+                        resetForms();
+                        addToast('success', `Hola ${foundUser.name.split(' ')[0]}`, 'Sesión iniciada correctamente.');
+                    }, 1500); 
+                  } else {
+                    setLoginStatusMessage('PENDIENTE: Tu cuenta espera validación manual por administración.');
+                    setIsSubmitting(false);
+                  }
+                } else {
+                  setLoginStatusMessage('ERROR: Credenciales incorrectas. Verifica tu usuario y clave/celular.');
+                  setIsSubmitting(false);
+                  addToast('error', 'Error de Acceso', 'Credenciales no válidas.');
+                }
+            }, 800);
+          };
+
+          const handleAdminPanelLogin = (e) => {
+            e.preventDefault();
+            setIsSubmitting(true);
+            setTimeout(() => {
+                if (adminCredentials.email === "copauyunifreddy@gmail.com" && adminCredentials.password === "*60Copa11") {
+                  setIsAdminLoggedIn(true);
+                  addToast('success', 'Acceso Concedido', 'Bienvenido al sistema maestro.');
+                } else {
+                  addToast('error', 'Acceso Denegado', 'Credenciales administrativas incorrectas.');
+                }
+                setIsSubmitting(false);
+            }, 500);
+          };
+
+          // --- FUNCIONES CRUD ---
+
+          const saveRegistration = async (data) => {
+            if (!user) {
+                addToast('error', 'Error de Conexión', 'Intente recargar la página.');
+                return;
+            }
+
+            const exists = registrations.some(r => r.phone === data.phone);
+            if (exists) {
+              addToast('info', 'Registro Duplicado', 'Ya existe un usuario con este celular/WhatsApp.');
+              return;
+            }
+
+            const newReg = {
+              ...data,
+              status: 'PENDIENTE',
+              password: null, 
+              notes: '',
+              permissions: { viewApplicants: false, viewMoodle: false, canEdit: false, isReadOnly: true },
+              enrolledCourses: [], 
+              date: new Date().toLocaleString(),
+              rawDate: new Date().toISOString()
+            };
+
+            try {
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'registrations'), newReg);
+                addToast('success', 'Solicitud Enviada', 'Tus datos han sido registrados exitosamente.');
+            } catch (e) {
+                console.error("Error guardando registro:", e);
+                addToast('error', 'Error al Guardar', 'Verifique su conexión e intente nuevamente.');
+            }
+          };
+
+          const saveCourse = async (e) => {
+            e.preventDefault();
+            if (!user) return;
+            setIsSubmitting(true);
+
+            const formData = new FormData(e.target);
+            const courseData = {
+              title: formData.get('title'),
+              instructor: formData.get('instructor'),
+              description: formData.get('description'),
+              schedule: formData.get('schedule'),
+              fileLink: formData.get('fileLink'), 
+              multimediaEmbed: formData.get('multimediaEmbed'), 
+              instructorId: currentUser?.id || 'admin',
+              students: editingCourse ? (editingCourse.students || 0) : 0 
+            };
+
+            const db = getFirestore();
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const collectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'courses');
+
+            try {
+                if (editingCourse) {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'courses', editingCourse.id);
+                    await updateDoc(docRef, courseData);
+                    addToast('success', 'Curso Actualizado', 'Los cambios se han guardado.');
+                } else {
+                    await addDoc(collectionRef, courseData);
+                    addToast('success', 'Curso Publicado', 'El nuevo curso está visible.');
+                }
+                setShowCourseModal(false);
+                setEditingCourse(null);
+            } catch (e) {
+                console.error("Error guardando curso:", e);
+                addToast('error', 'Error', 'No se pudo guardar el curso.');
+            } finally {
+                setIsSubmitting(false);
+            }
+          };
+
+          const deleteRegistration = async (id) => {
+            if(!window.confirm("¿Estás seguro de eliminar este registro permanentemente?")) return;
+            if (!user) return;
+
+            try {
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'registrations', id));
+                addToast('success', 'Eliminado', 'El registro ha sido borrado.');
+            } catch (e) {
+                console.error("Error eliminando registro:", e);
+                addToast('error', 'Error', 'No se pudo eliminar el registro.');
+            }
+          };
+
+          const deleteCourse = async (id) => {
+            if(!window.confirm("¿Eliminar este curso? Esta acción no se puede deshacer.")) return;
+            if (!user) return;
+
+            try {
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'courses', id));
+                addToast('success', 'Curso Eliminado', 'Se ha retirado de la oferta académica.');
+            } catch (e) {
+                console.error("Error eliminando curso:", e);
+            }
+          };
+
+          const enrollStudent = async (courseId) => {
+            if (!currentUser || !user) return;
+            
+            if (currentUser.enrolledCourses?.includes(courseId)) {
+              addToast('info', 'Ya Inscrito', 'Ya estás registrado en este curso.');
+              return;
+            }
+
+            const updatedCoursesList = [...(currentUser.enrolledCourses || []), courseId];
+            
+            try {
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'registrations', currentUser.id);
+                await updateDoc(userRef, { enrolledCourses: updatedCoursesList });
+
+                const course = courses.find(c => c.id === courseId);
+                if (course) {
+                    const courseRef = doc(db, 'artifacts', appId, 'public', 'data', 'courses', courseId);
+                    await updateDoc(courseRef, { students: (course.students || 0) + 1 });
+                }
+
+                addToast('success', '¡Inscripción Exitosa!', 'Bienvenido al curso.');
+
+            } catch (e) {
+                console.error("Error inscribiendo:", e);
+                addToast('error', 'Error', 'No se pudo procesar la inscripción.');
+            }
+          };
+
+          const handleEditClick = (user) => {
+            setEditingUser({ ...user }); 
+            setShowEditModal(true);
+          };
+
+          const handlePermissionsClick = (user) => {
+            const userWithPermissions = {
+              ...user,
+              permissions: user.permissions || { viewApplicants: false, viewMoodle: false, canEdit: false, isReadOnly: true }
+            };
+            setPermissionsUser(userWithPermissions);
+            setShowPermissionsModal(true);
+          };
+
+          const handleCourseEditClick = (course) => {
+            setEditingCourse(course);
+            setShowCourseModal(true);
+          };
+
+          const savePermissions = async (e) => {
+            e.preventDefault();
+            if (!permissionsUser || !user) return;
+            setIsSubmitting(true);
+
+            try {
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'registrations', permissionsUser.id);
+                await updateDoc(userRef, { permissions: permissionsUser.permissions });
+                setShowPermissionsModal(false);
+                addToast('success', 'Permisos Actualizados', `Configuración guardada para ${permissionsUser.name}.`);
+            } catch (e) {
+                console.error("Error guardando permisos:", e);
+                addToast('error', 'Error', 'Falló la actualización de permisos.');
+            } finally {
+                setIsSubmitting(false);
+            }
+          };
+
+          const saveEditedUser = async (e) => {
+            e.preventDefault();
+            if (!editingUser || !user) return;
+            setIsSubmitting(true);
+
+            try {
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'registrations', editingUser.id);
+                const { id, ...dataToUpdate } = editingUser;
+                await updateDoc(userRef, dataToUpdate);
+                setShowEditModal(false);
+                addToast('success', 'Perfil Actualizado', 'Los datos del usuario han sido modificados.');
+            } catch (e) {
+                console.error("Error actualizando usuario:", e);
+                addToast('error', 'Error', 'No se pudo actualizar el usuario.');
+            } finally {
+                setIsSubmitting(false);
+            }
+          };
+
+          const regenerateUserPassword = async (id) => {
+            const targetUser = registrations.find(r => r.id === id);
+            if (!targetUser || !user) return;
+
+            const newPass = generatePassword(targetUser.name, targetUser.phone);
+            
+            try {
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'registrations', id);
+                await updateDoc(userRef, { password: newPass });
+                addToast('success', 'Clave Regenerada', 'Nueva credencial asignada.');
+            } catch (e) {
+                console.error("Error regenerando clave:", e);
+                addToast('error', 'Error', 'Falló la generación de clave.');
+            }
+          };
+
+          const toggleValidation = async (id) => {
+            const targetUser = registrations.find(r => r.id === id);
+            if (!targetUser || !user) return;
+
+            const newStatus = targetUser.status === 'VALIDADO' ? 'PENDIENTE' : 'VALIDADO';
+            let updates = { status: newStatus };
+            if (newStatus === 'VALIDADO' && !targetUser.password) {
+                updates.password = generatePassword(targetUser.name, targetUser.phone);
+            }
+
+            try {
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'registrations', id);
+                await updateDoc(userRef, updates);
+                addToast('success', 'Estado Cambiado', `Usuario ${newStatus === 'VALIDADO' ? 'validado y activo' : 'suspendido a pendiente'}.`);
+            } catch (e) {
+                console.error("Error validando usuario:", e);
+                addToast('error', 'Error', 'No se pudo cambiar el estado.');
+            }
+          };
+
+          const handlePrint = () => window.print();
+
+          const filteredRegistrations = registrations.filter(reg => {
+            const matchesCategory = adminFilter === 'TODOS' || reg.type === adminFilter;
+            const matchesSearch = reg.name.toLowerCase().includes(adminSearch.toLowerCase()) || 
+                                  reg.phone.includes(adminSearch);
+            
+            let regDate;
+            try {
+                regDate = new Date(reg.rawDate || reg.id); 
+            } catch(e) {
+                regDate = new Date();
+            }
+
+            const start = adminDateStart ? new Date(adminDateStart) : null;
+            const end = adminDateEnd ? new Date(adminDateEnd) : null;
+            if (end) end.setHours(23, 59, 59);
+
+            const matchesDate = (!start || regDate >= start) && (!end || regDate <= end);
+            return matchesCategory && matchesSearch && matchesDate;
+          });
+
+          const closeAllSessions = () => {
+            setShowAdminModal(false);
+            setIsAdminLoggedIn(false);
+            setShowUserDashboard(false);
+            setCurrentUser(null);
+            setShowLoginModal(false);
+            setViewingCourse(null);
+            resetForms();
+          };
+
+          const closeUserDashboard = () => {
+            setShowUserDashboard(false);
+            setCurrentUser(null); 
+            setViewingCourse(null);
+            resetForms();
+          };
+
+          return (
+            <div className="min-h-screen bg-slate-900 font-sans text-gray-100 selection:bg-red-500 selection:text-white overflow-x-hidden">
+              <ToastContext.Provider value={addToast}>
+                <ToastContainer toasts={toasts} removeToast={removeToast} />
+                
+                {/* --- NAVEGACIÓN --- */}
+                <nav className={`fixed left-0 right-0 z-[60] flex justify-center transition-all duration-700 ease-out ${isScrolled ? 'top-6' : 'top-0'} no-print`}>
+                  <div className={`transition-all duration-500 ease-out flex items-center justify-between ${isScrolled ? 'w-[98%] md:w-[95%] lg:w-[1300px] rounded-full nav-glass py-3 px-6' : 'w-full bg-transparent py-8 px-6 md:px-12'}`}>
+                    <div className="flex items-center space-x-3 cursor-pointer group flex-shrink-0" onClick={() => scrollToSection('inicio')}>
+                      <div className="relative transform group-hover:rotate-12 transition-transform duration-500">
+                        <div className="absolute inset-0 bg-red-600 blur-lg opacity-40 rounded-full animate-pulse-glow"></div>
+                        <div className={`relative w-11 h-11 rounded-xl flex items-center justify-center border transition-all duration-300 ${isScrolled ? 'bg-slate-900 border-slate-700' : 'bg-slate-950 border-slate-700'} shadow-xl`}>
+                          <img 
+                            src={ITSO_LOGO_URL} 
+                            alt="ITSO Logo" 
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
+                      </div>
+                      <div className={`leading-none transition-all duration-500 ${isScrolled ? 'hidden sm:block' : 'block'}`}>
+                        <h1 className="font-bold text-lg tracking-tight text-white group-hover:text-red-500 transition-colors">ITSO <span className="text-red-500 group-hover:text-white transition-colors">OBERMAIER</span></h1>
+                        <p className="text-[9px] text-slate-400 font-medium tracking-[0.3em] uppercase group-hover:tracking-[0.4em] transition-all">Tecnología & Valores</p>
+                      </div>
+                    </div>
+
+                    <div className="hidden xl:flex items-center bg-slate-950/30 p-1.5 rounded-full border border-slate-800/50 backdrop-blur-sm flex-shrink-0">
+                      {NAV_ITEMS.map((item) => (
+                        <button key={item.id} onClick={() => scrollToSection(item.id)} className={`relative px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-2 group ${activeTab === item.id ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' : 'text-slate-400 hover:text-white'}`}>
+                          <span className="relative z-10 flex items-center gap-2">
+                            <span className={`transition-transform duration-300 group-hover:animate-wiggle`}>{item.icon}</span>
+                            {item.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button 
+                        onClick={handleOpenAdmin} 
+                        title="Administración" 
+                        className="p-2.5 rounded-full bg-slate-800 text-slate-400 hover:text-red-500 transition-all border border-slate-700 flex-shrink-0 cursor-pointer"
+                      >
+                        <Settings size={18} />
+                      </button>
+                      
+                      <button onClick={() => setShowMoodleModal(true)} className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-xs bg-orange-600/10 text-orange-400 border border-orange-500/30 hover:bg-orange-600 hover:text-white transition-all flex-shrink-0">
+                        <MoodleIcon className="w-4 h-4" /> Moodle
+                      </button>
+                      <button onClick={() => setShowTeacherModal(true)} className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-xs bg-amber-600/10 text-amber-400 border border-amber-500/30 hover:bg-amber-600 hover:text-white transition-all flex-shrink-0">
+                        <Briefcase size={16} /> Docentes
+                      </button>
+                      
+                      <button 
+                        onClick={handleOpenPortal} 
+                        className={`hidden md:flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-xs transition-all shadow-lg flex-shrink-0 cursor-pointer ${currentUser ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-600/20' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
+                      >
+                        {currentUser ? <><UserCheck size={16} /> Mi Panel</> : <><LogIn size={16} /> Portal Alumno</>}
+                      </button>
+                      
+                      <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="xl:hidden p-2.5 rounded-xl bg-slate-800 text-white active:scale-95 transition-transform flex-shrink-0">
+                        {isMenuOpen ? <X size={24} className="text-red-500" /> : <Menu size={24} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Mobile Menu */}
+                  {isMenuOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-4 mx-4 p-4 rounded-3xl bg-slate-900/95 backdrop-blur-2xl border border-slate-700/50 shadow-2xl xl:hidden z-[70] animate-fade-in-down max-h-[85vh] overflow-y-auto">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-blue-500"></div>
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        {NAV_ITEMS.map((item) => (
+                          <button key={item.id} onClick={() => { scrollToSection(item.id); setIsMenuOpen(false); }} className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all ${activeTab === item.id ? 'bg-red-600/20 border-red-500 text-white shadow-lg shadow-red-500/10' : 'bg-slate-800/40 border-slate-700/30 text-slate-400'}`}>
+                            <div className="mb-2">{item.icon}</div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-1 gap-3">
+                        <button onClick={() => { setShowMoodleModal(true); setIsMenuOpen(false); }} className="bg-orange-600 text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2 text-xs uppercase tracking-wider"><MoodleIcon className="w-5 h-5" /> Portal Moodle</button>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button onClick={() => { setShowTeacherModal(true); setIsMenuOpen(false); }} className="bg-amber-600/30 text-amber-400 border border-amber-500/30 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 text-xs uppercase tracking-wider"><Briefcase size={18} /> Docentes</button>
+                          <button 
+                            onClick={handleOpenPortal} 
+                            className={`text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2 text-xs uppercase tracking-wider ${currentUser ? 'bg-blue-600' : 'bg-blue-600 border border-blue-500'}`}
+                          >
+                            {currentUser ? <><UserCheck size={18} /> Mi Panel</> : <><LogIn size={18} /> Portal Alumno</>}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </nav>
+
+                {/* --- HERO SECTION --- */}
+                <section id="inicio" className="relative min-h-screen flex items-center pt-28 overflow-hidden no-print">
+                  <ParticleBackground />
+                  <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+                    <div className="space-y-8">
+                      <FadeInSection>
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-widest">
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Inscripciones 2026 Abiertas
+                        </div>
+                        <h1 className="text-5xl lg:text-7xl font-black text-white mt-6 leading-tight uppercase tracking-tighter">
+                          Pasaporte a la <br/>
+                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-red-400">
+                            {displayText}<span className="border-r-4 border-red-500 animate-blink ml-1">&nbsp;</span>
+                          </span>
+                        </h1>
+                        <p className="text-lg text-slate-300 max-w-xl leading-relaxed mt-6 border-l-4 border-slate-700 pl-6">
+                          No es solo un título técnico, es una declaración de principios. Fórmate en el instituto líder de El Alto con el respaldo de <strong className="text-white">Fe y Alegría</strong>.
+                        </p>
+                        <div className="flex flex-wrap gap-4 mt-10">
+                          <button onClick={() => scrollToSection('carreras')} className="px-8 py-4 bg-red-600 text-white rounded-xl font-bold hover:bg-red-500 transition-all shadow-xl shadow-red-600/30 flex items-center gap-2">Explorar Carreras <ArrowRight size={18} /></button>
+                          <button onClick={handleScrollToTutorial} className="px-8 py-4 bg-white/5 text-white border border-white/10 rounded-xl font-bold hover:bg-white/10 transition-all flex items-center gap-2"><Play size={18} /> Ver Tutorial</button>
+                        </div>
+                      </FadeInSection>
+                    </div>
+                    <div className="relative hidden lg:flex justify-center">
+                      <div className="relative w-full max-w-md aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-slate-700 animate-float group">
+                        <img src="https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&q=80&w=800" alt="Estudiante" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-90"></div>
+                        <div className="absolute bottom-8 left-8 right-8">
+                          <span className="bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full mb-3 inline-block uppercase tracking-widest">ITSO MAKERS</span>
+                          <p className="text-white font-bold text-xl leading-tight italic">"El conocimiento se vuelve real cuando lo construyes."</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="bg-slate-950 py-12 border-t border-slate-900 no-print">
+                  <div className="container mx-auto px-6">
+                    <div className="rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-800 bg-black relative group">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 to-transparent opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                      <div className="relative w-full aspect-video">
+                        <iframe 
+                          src="https://drive.google.com/file/d/1QMXaV0nxoZpU31Y0XThXZn4NGi2CITiW/preview" 
+                          className="w-full h-full" 
+                          title="Mensaje Principal"
+                          allow="autoplay"
+                        ></iframe>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* ... (SECCIONES INTERMEDIAS MANTENIDAS) ... */}
+                
+                <section id="certificaciones" className="py-24 bg-slate-900 relative overflow-hidden">
+                    {/* ... (CONTENIDO DE CERTIFICACIONES IGUAL AL ORIGINAL) ... */}
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                       <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-slate-900 to-slate-900"></div>
+                    </div>
+
+                    <div className="container mx-auto px-6 relative z-10">
+                      <div className="text-center mb-20">
+                        <FadeInSection>
+                          <span className="text-blue-500 font-black uppercase tracking-[0.2em] text-xs mb-3 block">Alianzas de Clase Mundial</span>
+                          <h2 className="text-4xl md:text-6xl font-black text-white leading-tight">
+                            Certificación <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-red-500">Doble Internacional</span>
+                          </h2>
+                          <p className="text-slate-400 mt-6 max-w-2xl mx-auto text-lg font-medium leading-relaxed">
+                             Desde una antena WISP en una ladera andina hasta la configuración de seguridad en la red de una entidad financiera nacional.
+                          </p>
+                        </FadeInSection>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+                         <FadeInSection className="group relative" delay={100}>
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="relative h-full bg-slate-950/50 border border-slate-800 p-10 rounded-[2.5rem] backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300">
+                               <div className="flex items-center justify-between mb-8">
+                                  <div className="p-4 bg-blue-900/20 rounded-2xl border border-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform duration-300">
+                                     <Globe size={40} strokeWidth={1.5} />
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <span className="text-[10px] font-black bg-blue-600 text-white px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1"><BadgeCheck size={12}/> Validez Mundial</span>
+                                  </div>
+                               </div>
+                               <h3 className="text-3xl font-black text-white mb-4">Cisco Networking Academy</h3>
+                               <p className="text-slate-400 mb-8 leading-relaxed">Estándar de oro en la industria. Formación oficial en <strong className="text-white">CCNA v7</strong> enfocada en redes empresariales, seguridad corporativa y automatización de infraestructura crítica.</p>
+                               <ul className="space-y-3 mb-8">
+                                  {['Seguridad de Redes', 'Routing & Switching', 'Automatización SDN'].map((item, i) => (
+                                    <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-bold">
+                                       <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div> {item}
+                                    </li>
+                                  ))}
+                               </ul>
+                            </div>
+                         </FadeInSection>
+
+                         <FadeInSection className="group relative" delay={200}>
+                            <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-transparent rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="relative h-full bg-slate-950/50 border border-slate-800 p-10 rounded-[2.5rem] backdrop-blur-sm hover:border-red-500/50 transition-all duration-300">
+                               <div className="flex items-center justify-between mb-8">
+                                  <div className="p-4 bg-red-900/20 rounded-2xl border border-red-500/20 text-red-400 group-hover:scale-110 transition-transform duration-300">
+                                     <Router size={40} strokeWidth={1.5} />
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <span className="text-[10px] font-black bg-red-600 text-white px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1"><Signal size={12}/> Alta Demanda Local</span>
+                                  </div>
+                               </div>
+                               <h3 className="text-3xl font-black text-white mb-4">MikroTik Academy</h3>
+                               <p className="text-slate-400 mb-8 leading-relaxed">El motor de la conectividad en El Alto. Certificación <strong className="text-white">MTCNA</strong> especializada en soluciones WISP, control de ancho de banda y despliegue rápido de redes.</p>
+                               <ul className="space-y-3 mb-8">
+                                  {['Gestión de Ancho de Banda', 'Enlaces Inalámbricos', 'Firewall Avanzado'].map((item, i) => (
+                                    <li key={i} className="flex items-center gap-3 text-slate-300 text-sm font-bold">
+                                       <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> {item}
+                                    </li>
+                                  ))}
+                               </ul>
+                            </div>
+                         </FadeInSection>
+                      </div>
+                    </div>
+                </section>
+
+                <section id="legado" className="py-32 bg-slate-950 no-print">
+                    <div className="container mx-auto px-6">
+                      <div className="grid lg:grid-cols-2 gap-16 items-center">
+                        <FadeInSection>
+                          <div className="relative group rounded-3xl overflow-hidden border border-slate-700 shadow-2xl">
+                             <iframe src={VIDEOS[0]} className="w-full aspect-square" title="Legado"></iframe>
+                             <div className="absolute bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md p-6 border-t border-slate-700">
+                                <p className="text-red-500 font-black text-xs uppercase mb-1">Fundador</p>
+                                <h3 className="text-2xl font-bold text-white tracking-tight">Padre Sebastián Obermaier</h3>
+                             </div>
+                          </div>
+                        </FadeInSection>
+                        <div className="space-y-8">
+                          <FadeInSection delay={200}>
+                            <h2 className="text-5xl font-black text-white uppercase tracking-tighter">La Teología del <span className="text-red-600">Ladrillo</span></h2>
+                            <div className="pl-8 border-l-4 border-red-600 bg-red-900/5 py-4 rounded-r-xl">
+                              <p className="text-2xl text-slate-200 italic font-light">"Lo que más aprecio de aquí es el frío, porque forma nuestro carácter... forma gente valiente."</p>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-6">
+                               <CounterCard end={10000} suffix="+" label="Técnicos Profesionales" />
+                               <CounterCard end={100} suffix="%" label="Título Fiscal" />
+                               <CounterCard end={25} suffix="+" label="Años de Servicio" />
+                            </div>
+                          </FadeInSection>
+                        </div>
+                      </div>
+                    </div>
+                </section>
+
+                <section id="carreras" className="py-32 bg-slate-900 no-print">
+                    <div className="container mx-auto px-6 text-center mb-20">
+                      <FadeInSection>
+                        <span className="text-red-500 font-bold uppercase tracking-[0.3em] text-xs mb-4 block">Oferta Académica</span>
+                        <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">Especialización <span className="text-blue-500 underline underline-offset-8">Radical</span></h2>
+                      </FadeInSection>
+                    </div>
+                    <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12">
+                      <CareerCard icon={<Zap size={32} />} title="Electrónica" colorClass="bg-red-600" shadowClass="shadow-xl shadow-red-600/30" desc="Domina el espectro y la maquinaria. Telecomunicaciones, PLCs y Automatización Industrial avanzada." features={["MikroTik MTCNA", "Telecomunicaciones", "Sistemas de Potencia"]} />
+                      <CareerCard icon={<Cpu size={32} />} title="Informática Ind." colorClass="bg-blue-600" shadowClass="shadow-xl shadow-blue-600/30" desc="Programación de bajo nivel y redes industriales. El corazón de la industria 4.0 en Bolivia." features={["Cisco CCNA", "Python OT", "SCADA & HMI"]} />
+                    </div>
+                </section>
+                
+                <section id="makers" className="py-32 bg-black overflow-hidden no-print">
+                    <div className="container mx-auto px-6 flex flex-col lg:flex-row gap-20 items-center">
+                        <div className="lg:w-1/2 space-y-8">
+                          <FadeInSection>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-900 border border-slate-800 text-blue-400 font-bold uppercase text-xs"><Rocket size={14} className="animate-bounce" /> Club de Robótica</div>
+                            <h2 className="text-6xl font-black text-white mt-6 uppercase tracking-tighter">ITSO <span className="text-slate-500">Makers</span></h2>
+                            <div className="grid grid-cols-2 gap-6 pt-4">
+                              <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 hover:border-red-500/50 transition-colors"><Cpu className="text-red-500 mb-4" /><p className="text-white font-bold text-xl">SumoBots</p></div>
+                              <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 hover:border-blue-500/50 transition-colors"><Wifi className="text-blue-500 mb-4" /><p className="text-white font-bold text-xl">Internet of Things</p></div>
+                            </div>
+                          </FadeInSection>
+                        </div>
+                        <div className="lg:w-1/2 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl aspect-video"><iframe src={VIDEOS[1]} className="w-full h-full" title="Makers"></iframe></div>
+                    </div>
+                </section>
+
+                <section id="media" className="py-32 bg-slate-950 no-print">
+                    <div className="container mx-auto px-6">
+                        <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-slate-800 pb-8">
+                           <div><h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Canal de Experiencias</h2></div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                           <div className="lg:col-span-2 lg:row-span-2 rounded-3xl overflow-hidden border border-slate-800 bg-slate-900 group relative">
+                              <iframe src={VIDEOS[2]} className="w-full h-full aspect-video md:aspect-auto" title="Main Video"></iframe>
+                              <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">En Destacado</div>
+                           </div>
+                           {VIDEOS.slice(3, 9).map((vid, idx) => (<div key={idx} className="rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 hover:border-blue-500/50 transition-all aspect-video"><iframe src={vid} className="w-full h-full" title={`vid-${idx}`}></iframe></div>))}
+                        </div>
+                    </div>
+                </section>
+
+                <section id="por-que-itso" className="py-32 bg-slate-900 relative no-print">
+                    <div className="container mx-auto px-6">
+                      <FadeInSection className="text-center mb-24"><h2 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight uppercase tracking-tighter">Técnica que <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-red-500">Toca el Cielo</span></h2></FadeInSection>
+                      <div className="grid md:grid-cols-3 gap-8">
+                        <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 hover:bg-slate-800/50 transition-all group"><Award className="text-blue-500 mb-6 group-hover:scale-110 transition-transform" size={40} /><h3 className="text-2xl font-bold text-white mb-4">Resolución Ministerial</h3><p className="text-slate-400 text-sm">Título en Provisión Nacional bajo la R.M. 0402/2018.</p></div>
+                        <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 hover:bg-slate-800/50 transition-all group"><Globe className="text-red-500 mb-6 group-hover:scale-110 transition-transform" size={40} /><h3 className="text-2xl font-bold text-white mb-4">Respaldo Internacional</h3><p className="text-slate-400 text-sm">Alianzas estratégicas que garantizan equipamiento de vanguardia.</p></div>
+                        <div className="bg-slate-800/30 p-8 rounded-3xl border border-slate-700/50 hover:bg-slate-800/50 transition-all group"><HeartPulse className="text-purple-500 mb-6 group-hover:scale-110 transition-transform" size={40} /><h3 className="text-2xl font-bold text-white mb-4">Valores Obermaier</h3><p className="text-slate-400 text-sm">Ciudadanos éticos y valientes listos para servir.</p></div>
+                      </div>
+                    </div>
+                </section>
+
+                <section id="tutorial-section" className="bg-slate-950 py-24 border-t border-slate-900 no-print relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                       <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]"></div>
+                       <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-red-600/10 rounded-full blur-[120px]"></div>
+                    </div>
+
+                    <div className="container mx-auto px-6 relative z-10">
+                       <div className="text-center mb-12">
+                          <span className="text-blue-500 font-bold uppercase tracking-[0.2em] text-xs mb-2 block animate-pulse">Guía de Navegación</span>
+                          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight uppercase">Conoce tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-red-500">Nuevo Campus Digital</span></h2>
+                       </div>
+
+                       <div className={`transition-all duration-700 ease-out transform ${showSpotlight ? 'scale-100 opacity-100' : 'hover:scale-[1.01]'}`}>
+                          <div className="rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-800 bg-black relative aspect-video max-w-5xl mx-auto group">
+                             {!showSpotlight ? (
+                               <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80')] bg-cover bg-center cursor-pointer" onClick={() => setShowSpotlight(true)}>
+                                  <div className="absolute inset-0 bg-slate-950/80 group-hover:bg-slate-950/70 transition-all duration-500 backdrop-blur-sm flex flex-col items-center justify-center">
+                                      <div className="w-24 h-24 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-[0_0_40px_rgba(220,38,38,0.5)] group-hover:scale-110 transition-transform duration-500 relative backdrop-blur-md">
+                                         <Play size={36} className="ml-1.5 fill-white text-white" />
+                                         <div className="absolute inset-0 rounded-full border border-white/40 animate-[ping_3s_ease-in-out_infinite]"></div>
+                                         <div className="absolute inset-0 rounded-full border border-white/20 animate-[ping_3s_ease-in-out_infinite_0.5s]"></div>
+                                      </div>
+                                      <h3 className="mt-8 text-2xl md:text-4xl font-black text-white tracking-tighter uppercase text-center px-4">Ver Tutorial de Inicio</h3>
+                                      <p className="text-slate-300 font-medium mt-3 text-sm md:text-base bg-black/50 px-6 py-2 rounded-full border border-white/10">Haz clic para descubrir cómo registrarte</p>
+                                  </div>
+                               </div>
+                             ) : (
+                                <iframe 
+                                  src="https://drive.google.com/file/d/1QMXaV0nxoZpU31Y0XThXZn4NGi2CITiW/preview" 
+                                  className="w-full h-full" 
+                                  title="Mensaje Principal"
+                                  allow="autoplay"
+                                ></iframe>
+                             )}
+                          </div>
+                       </div>
+                    </div>
+                </section>
+
+                <section id="contacto" className="relative bg-red-700 py-32 overflow-hidden group no-print">
+                     <div className="container mx-auto px-6 relative z-10 text-center">
+                        <div className="h-24 md:h-32 mb-8 flex items-center justify-center overflow-hidden"><h2 key={contactTitleIndex} className="text-4xl md:text-7xl font-black text-white tracking-tight animate-title-switch">{CONTACT_HEADLINES[contactTitleIndex].main} <span className="text-slate-900 inline-block">{CONTACT_HEADLINES[contactTitleIndex].highlight}</span></h2></div>
+                        <div className="mb-12 flex justify-center"><button onClick={() => setShowRegisterModal(true)} className="relative inline-flex group hover:scale-105 transition-transform"><div className="absolute transition-all duration-1000 opacity-70 -inset-px bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] rounded-xl blur-lg animate-tilt"></div><div className="relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-red-600 bg-white rounded-xl uppercase tracking-tighter">Comienza tu Admisión 2026 <ArrowRight className="ml-2 animate-pulse" /></div></button></div>
+                        <div className="flex flex-col sm:flex-row justify-center gap-6"><button className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-2xl transition-all hover:bg-slate-800 active:scale-95"><Phone size={20} /> Hablar por WhatsApp</button><button className="bg-white text-red-700 px-10 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-2xl transition-all hover:bg-gray-100 active:scale-95"><MapPin size={20} /> Ver Ubicación Sede</button></div>
+                     </div>
+                </section>
+
+                <footer className="bg-black text-slate-500 py-20 border-t border-slate-900 no-print">
+                     <div className="container mx-auto px-6 grid md:grid-cols-4 gap-12 text-sm">
+                        <div className="col-span-2 space-y-6">
+                           <h4 className="text-white font-black text-2xl tracking-tighter uppercase">ITSO Obermaier</h4>
+                           <p className="max-w-md text-slate-400 font-medium">Institución de Convenio (Iglesia - Estado) regida por R.M. 0402/2018.</p>
+                           <div className="flex gap-4">{[Facebook, Instagram, Youtube].map((Icon, i) => (<a key={i} href="#" aria-label="Social Link" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all"><Icon size={18}/></a>))}</div>
+                        </div>
+                        <div><h5 className="text-white font-bold mb-6 uppercase tracking-wider">Académico</h5><ul className="space-y-3 font-medium"><li>Reglamento Estudiantil</li><li>Calendario 2026</li></ul></div>
+                        <div><h5 className="text-white font-bold mb-6 uppercase tracking-wider">Ubicación</h5><p className="text-slate-300">Calle Montero Nro. 123,</p><p>Villa Adela, El Alto</p></div>
+                     </div>
+                     <div className="text-center mt-20 text-[10px] text-slate-700 border-t border-slate-900/50 pt-8 uppercase tracking-[0.3em] font-black">
+                        <p>© 2026 ITSO Reverendo Padre Sebastián Obermaier.</p>
+                        <p className="mt-2 text-[9px] opacity-60">Model Bolivia & Copa Uyuni Tecnología | Supervisión: Freddy Copa Uyuni</p>
+                     </div>
+                </footer>
+
+                {/* --- MODALES FORMULARIOS --- */}
+
+                {showRegisterModal && (
+                  <Modal onClose={() => { setShowRegisterModal(false); resetForms(); }} title="Admisión 2026" accent="blue" zIndex="z-[2000]">
+                    <div className="mb-8 rounded-2xl overflow-hidden border border-blue-500/30 shadow-xl bg-black relative group">
+                       <div className="absolute top-4 left-4 z-10 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                         Tutorial de Acceso
+                       </div>
+                       <iframe 
+                         src="https://drive.google.com/file/d/1w4YxwAcKUCqARbiqwo3dp5R1cW-jyXde/preview" 
+                         className="w-full aspect-video" 
+                         title="Tutorial Moodle"
+                         allow="autoplay"
+                       ></iframe>
+                    </div>
+                    <p className="text-blue-400 text-xs font-bold text-center mb-6 uppercase tracking-widest">
+                       ?? Sigue los pasos del video para registrarte ??
+                    </p>
+                    <form className="space-y-5" onSubmit={(e) => { 
+                      e.preventDefault(); 
+                      const formData = new FormData(e.target);
+                      const name = formData.get('name');
+                      const phone = formData.get('phone');
+                      const career = formData.get('career');
+                      
+                      saveRegistration({ type: 'ESTUDIANTE', name, phone, career, level: 'Postulante Inicial' });
+                      setShowRegisterModal(false); 
+                    }}>
+                      <div className="relative group"><Users className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20}/><input type="text" name="name" required placeholder="Nombre Completo" autoComplete="name" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white" /></div>
+                      <div className="relative group"><Phone className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20}/><input type="tel" name="phone" required placeholder="WhatsApp (Celular)" autoComplete="tel" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white" /></div>
+                      <div className="relative group"><BookOpen className="absolute left-4 top-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20}/><select name="career" defaultValue="" required className="w-full pl-12 pr-10 py-4 rounded-xl outline-none text-slate-400 input-glass appearance-none transition-all"><option value="" disabled>Carrera de Interés</option><option value="Informática Industrial">Informática Industrial</option><option value="Electrónica">Electrónica Industrial</option><option value="Robótica">Club Makers</option></select></div>
+                      <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 group shadow-xl active:scale-95 transition-all">Enviar Postulación <Send size={18} className="group-hover:translate-x-1 transition-transform"/></button>
+                    </form>
+                  </Modal>
+                )}
+
+                {showMoodleModal && (
+                  <Modal onClose={() => { setShowMoodleModal(false); resetForms(); }} title="Moodle Estudiantil" accent="orange" wide>
+                    <div className="mb-8 rounded-2xl overflow-hidden border border-orange-500/30 shadow-xl bg-black relative group">
+                       <div className="absolute top-4 left-4 z-10 bg-orange-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                         Tutorial de Acceso
+                       </div>
+                       <iframe 
+                         src="https://drive.google.com/file/d/1fdvY6zQcVbJlDHLImU2UEMhVyeiArEry/preview" 
+                         className="w-full aspect-video" 
+                         title="Tutorial Moodle"
+                         allow="autoplay"
+                       ></iframe>
+                    </div>
+                    <p className="text-orange-400 text-xs font-bold text-center mb-6 uppercase tracking-widest">
+                       ?? Sigue los pasos del video para registrarte ??
+                    </p>
+                    <form className="space-y-8" onSubmit={(e) => { 
+                      e.preventDefault(); 
+                      e.stopPropagation(); 
+                      const formData = new FormData(e.target);
+                      const name = formData.get('name');
+                      const phone = formData.get('phone');
+                      const email = formData.get('email');
+                      
+                      const careerObj = STUDENT_CAREERS.find(c => c.id === moodleForm.career);
+                      saveRegistration({ 
+                        type: 'MOODLE', 
+                        name, 
+                        phone, 
+                        email, 
+                        career: careerObj?.name || 'Varios', 
+                        level: moodleForm.period ? `${moodleForm.period}º ${careerObj?.type || 'Semestre'}` : 'Sin Asignar' 
+                      });
+                      setShowMoodleModal(false); 
+                    }}>
+                      <div className="space-y-4">
+                        <h4 className="text-slate-300 text-sm font-bold uppercase tracking-widest border-b border-slate-800 pb-2 mb-4 flex items-center gap-2">
+                          <Users size={16} className="text-orange-500" /> Datos del Alumno
+                        </h4>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <input type="text" name="name" required placeholder="Nombre Completo" autoComplete="name" className="w-full bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass" />
+                          <input type="tel" name="phone" required placeholder="Celular (Contacto)" autoComplete="tel" className="w-full bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass" />
+                        </div>
+                        <input type="email" name="email" required placeholder="Correo de contacto" autoComplete="email" className="w-full bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass" />
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="text-slate-300 text-sm font-bold uppercase tracking-widest border-b border-slate-800 pb-2 mb-4 flex items-center gap-2">
+                          <School size={16} className="text-orange-500" /> Carrera y Semestre/Año
+                        </h4>
+                        <div className="grid gap-3">
+                          {STUDENT_CAREERS.map((career) => (
+                            <div key={career.id} onClick={(e) => { e.stopPropagation(); setMoodleForm({ ...moodleForm, career: career.id, period: '' }); }} className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center gap-4 relative overflow-hidden ${moodleForm.career === career.id ? 'bg-orange-900/20 border-orange-500 shadow-lg' : 'bg-slate-800/20 border-slate-700 hover:bg-slate-800/40'}`}>
+                              <div className={`p-3 rounded-lg ${moodleForm.career === career.id ? 'bg-orange-500 text-white' : 'bg-slate-800 text-slate-400'}`}>{career.icon}</div>
+                              <div className="flex-1">
+                                <h5 className={`font-bold text-lg ${moodleForm.career === career.id ? 'text-white' : 'text-slate-300'}`}>{career.name}</h5>
+                                <p className="text-[10px] uppercase text-slate-500 font-bold tracking-widest">{career.type}s: 1 al {career.count}</p>
+                              </div>
+                              {moodleForm.career === career.id && <CheckCircle className="text-orange-500" size={24} />}
+                              {moodleForm.career === career.id && (
+                                <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in" onClick={(e) => e.stopPropagation()}>
+                                  <div className="w-full text-center">
+                                    <p className="text-orange-400 font-black text-[10px] uppercase mb-3 tracking-widest text-center">Elegir {career.type}</p>
+                                    <div className="flex justify-center gap-2 flex-wrap">
+                                      {[...Array(career.count)].map((_, i) => (
+                                        <button 
+                                          type="button" 
+                                          key={i} 
+                                          onClick={(e) => { e.stopPropagation(); setMoodleForm({...moodleForm, career: career.id, period: i+1}); }} 
+                                          className={`w-12 h-12 rounded-xl text-sm font-black border transition-all shadow-lg flex items-center justify-center ${moodleForm.period === i + 1 ? 'bg-orange-500 text-white border-orange-400 scale-105 shadow-orange-900/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500 hover:text-white'}`}
+                                        >
+                                          {i + 1}º
+                                        </button>
+                                      ))}
+                                    </div>
+                                    <button type="button" onClick={() => setMoodleForm({...moodleForm, career: ''})} className="mt-4 text-[10px] text-slate-500 underline uppercase font-black text-center">Cambiar Especialidad</button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button className="w-full bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-orange-900/20 active:scale-95 transition-all">Sincronizar Acceso</button>
+                    </form>
+                  </Modal>
+                )}
+
+                {showTeacherModal && (
+                  <Modal onClose={() => { setShowTeacherModal(false); resetForms(); }} title="Registro Claustro" accent="amber" wide>
+                    <div className="mb-8 rounded-2xl overflow-hidden border border-amber-500/30 shadow-xl bg-black relative group">
+                       <div className="absolute top-4 left-4 z-10 bg-amber-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+                         Tutorial de Registro
+                       </div>
+                       <iframe 
+                         src="https://drive.google.com/file/d/1roDfl0vDHLbY3slG-xWOwISUFfqExw6v/preview" 
+                         className="w-full aspect-video" 
+                         title="Tutorial Docentes"
+                         allow="autoplay"
+                       ></iframe>
+                    </div>
+                    <p className="text-amber-400 text-xs font-bold text-center mb-6 uppercase tracking-widest">
+                       ?? Completa tus datos a continuación ??
+                    </p>
+                    <form className="space-y-8" onSubmit={(e) => { 
+                      e.preventDefault(); 
+                      const formData = new FormData(e.target);
+                      const name = formData.get('name');
+                      const phone = formData.get('phone');
+                      const email = formData.get('email');
+                      
+                      const specialties = formData.getAll('specialties');
+
+                      saveRegistration({ 
+                        type: 'DOCENTE', 
+                        name, 
+                        phone, 
+                        email, 
+                        specialties: specialties.length > 0 ? specialties : ['Postulación General'], 
+                        level: 'Docente Profesional' 
+                      });
+                      setShowTeacherModal(false); 
+                    }}>
+                      <div className="space-y-4">
+                        <h4 className="text-slate-300 text-sm font-bold uppercase tracking-widest border-b border-slate-800 pb-2 mb-4 flex items-center gap-2">
+                          <Users size={16} className="text-amber-500" /> Información Personal
+                        </h4>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <input type="text" name="name" required placeholder="Nombre Completo" autoComplete="name" className="w-full bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass" />
+                          <input type="tel" name="phone" required placeholder="WhatsApp (Contraseña)" autoComplete="tel" className="w-full bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass" />
+                        </div>
+                        <input type="email" name="email" required placeholder="Correo Institucional" autoComplete="email" className="w-full bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass" />
+                      </div>
+
+                      <div className="space-y-6">
+                        <h4 className="text-slate-300 text-sm font-bold uppercase tracking-widest border-b border-slate-800 pb-2 mb-4 flex items-center gap-2">
+                          <Layers size={16} className="text-amber-500" /> Áreas y Niveles
+                        </h4>
+                        {TEACHER_SPECIALTIES.map((spec) => (
+                          <div key={spec.id} className="bg-slate-800/20 p-5 rounded-2xl border border-slate-700/50">
+                            <div className="flex items-center mb-4">
+                              <label className="flex items-center cursor-pointer group">
+                                <input type="checkbox" name="specialties" value={spec.name} className="hidden peer custom-checkbox" />
+                                <div className="w-5 h-5 border-2 border-slate-600 rounded mr-3 peer-checked:bg-amber-500 peer-checked:border-amber-500 flex items-center justify-center transition-all">
+                                  <CheckCircle size={14} className="text-black opacity-0 peer-checked:opacity-100" />
+                                </div>
+                                <span className="text-white font-bold group-hover:text-amber-400 transition-colors">{spec.name}</span>
+                              </label>
+                            </div>
+                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 ml-8">
+                              {[...Array(spec.count)].map((_, i) => (
+                                <label key={`${spec.id}-level-${i}`} className="cursor-pointer relative group">
+                                  <input type="checkbox" name="specialties" value={`${spec.name} - ${spec.type} ${i+1}`} className="hidden peer" />
+                                  <div className="px-2 py-2 rounded-lg bg-slate-900 border border-slate-700 text-center text-[10px] text-slate-500 peer-checked:bg-amber-500/20 peer-checked:border-amber-500 peer-checked:text-amber-400 transition-all hover:border-slate-500">
+                                    {spec.type} {i+1}
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button className="w-full bg-amber-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-amber-500 transition-all shadow-lg shadow-amber-900/20">Enviar Registro Docente <Briefcase size={18} /></button>
+                    </form>
+                  </Modal>
+                )}
+
+                {/* --- DASHBOARD DE USUARIO LIMITADO CON HERRAMIENTAS DOCENTES --- */}
+                {showUserDashboard && currentUser && (
+                  <Modal onClose={() => { closeUserDashboard(); }} title="Mi Panel de Gestión" accent="blue" wide>
+                    <div id="printable-area">
+                      {/* Header del Panel de Usuario */}
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6 border-b border-slate-800 pb-8">
+                        <div className="flex items-center gap-6">
+                          <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-lg shadow-blue-900/20">
+                            {currentUser.name.charAt(0)}
+                          </div>
+                          <div>
+                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter">{currentUser.name}</h2>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <span className="text-[10px] font-bold bg-slate-800 text-slate-400 px-3 py-1 rounded-lg uppercase tracking-widest border border-slate-700">{currentUser.type}</span>
+                              <span className="text-[10px] font-bold bg-green-900/20 text-green-400 px-3 py-1 rounded-lg uppercase tracking-widest border border-green-500/20 flex items-center gap-1"><ShieldCheck size={12}/> Verificado</span>
+                              {currentUser.permissions?.viewApplicants && <span className="text-[9px] font-black bg-indigo-900/20 text-indigo-400 px-3 py-1 rounded-lg uppercase tracking-widest border border-indigo-500/20">Gestor Admisión</span>}
+                              {currentUser.permissions?.viewMoodle && <span className="text-[9px] font-black bg-orange-900/20 text-orange-400 px-3 py-1 rounded-lg uppercase tracking-widest border border-orange-500/20">Gestor Moodle</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nivel de Acceso</p>
+                           <div className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 border ${currentUser.permissions?.isReadOnly ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-blue-900/20 border-blue-500/30 text-blue-400'}`}>
+                              {currentUser.permissions?.isReadOnly ? <><Eye size={14}/> Solo Lectura</> : <><Edit3 size={14}/> Control Total</>}
+                           </div>
+                        </div>
+                      </div>
+
+                      {/* Barra de Herramientas y Filtros */}
+                      <div className="flex flex-col xl:flex-row justify-between items-center gap-4 mb-6 no-print">
+                        {/* Botón de cambio de vista */}
+                        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                          <button onClick={() => setUserViewMode('LISTA')} className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${userViewMode === 'LISTA' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                            <TableIcon size={16} /> Lista
+                          </button>
+                          <button onClick={() => setUserViewMode('GRID')} className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${userViewMode === 'GRID' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-500 hover:text-white'}`}>
+                            <LayoutGrid size={16} /> Tarjetas
+                          </button>
+                        </div>
+
+                        {/* Buscador */}
+                        <div className="relative group w-full md:w-auto flex-1 max-w-md">
+                          <Search className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
+                          <input 
+                            type="text" 
+                            placeholder="Buscar alumno por nombre..." 
+                            className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-bold outline-none focus:border-blue-500 transition-all placeholder:text-slate-600 uppercase tracking-wide"
+                            value={userSearch}
+                            onChange={(e) => setUserSearch(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Controles de Acción (Botones) */}
+                        <div className="flex gap-2 items-center">
+                          <div className="relative group"><CalendarRange className="absolute left-4 top-3.5 text-slate-500" size={16} /><input type="date" className="w-32 pl-10 pr-2 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-[10px] font-bold outline-none focus:border-blue-500 transition-all" value={userDateStart} onChange={(e) => setUserDateStart(e.target.value)} /></div>
+                          <div className="relative group"><CalendarRange className="absolute left-4 top-3.5 text-slate-500" size={16} /><input type="date" className="w-32 pl-10 pr-2 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-[10px] font-bold outline-none focus:border-blue-500 transition-all" value={userDateEnd} onChange={(e) => setUserDateEnd(e.target.value)} /></div>
+                          
+                          <button onClick={handlePrint} className="px-4 py-3 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 transition-all" title="Imprimir Reporte"><Printer size={18}/></button>
+
+                          {/* BOTONES SIEMPRE VISIBLES PARA DOCENTES */}
+                          {currentUser.type === 'DOCENTE' ? (
+                            <>
+                              <button 
+                                onClick={() => setShowTeacherTools({ ...showTeacherTools, createContact: true })} 
+                                className="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 border transition-all bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-500 shadow-lg shadow-indigo-900/20"
+                              >
+                                <UserPlus size={16} /> Nuevo Postulante
+                              </button>
+                              <button 
+                                onClick={() => setShowTeacherTools({ ...showTeacherTools, createMoodle: true })}
+                                className="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 border transition-all bg-orange-600 text-white border-orange-500 hover:bg-orange-500 shadow-lg shadow-orange-900/20"
+                              >
+                                <BookPlus size={16} /> Registrar Alumno
+                              </button>
+                              <button 
+                                onClick={() => { setEditingCourse(null); setShowCourseModal(true); }}
+                                className="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 border transition-all bg-yellow-600 text-white border-yellow-500 hover:bg-yellow-500 shadow-lg shadow-yellow-900/20"
+                              >
+                                <PlusCircle size={16} /> Crear Curso
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {currentUser.permissions?.viewApplicants && !currentUser.permissions?.isReadOnly && (
+                                <button 
+                                  onClick={() => setShowTeacherTools({ ...showTeacherTools, createContact: true })} 
+                                  className="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 border transition-all bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-500 shadow-lg shadow-indigo-900/20"
+                                >
+                                  <UserPlus size={16} /> Nuevo Postulante
+                                </button>
+                              )}
+                              {currentUser.permissions?.viewMoodle && !currentUser.permissions?.isReadOnly && (
+                                <button 
+                                  onClick={() => setShowTeacherTools({ ...showTeacherTools, createMoodle: true })}
+                                  className="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 border transition-all bg-orange-600 text-white border-orange-500 hover:bg-orange-500 shadow-lg shadow-orange-900/20"
+                                >
+                                  <BookPlus size={16} /> Registrar Alumno
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Contenido Dinámico: Registros Asignados - SEPARADOS */}
+                      
+                      {/* SECCIÓN POSTULANTES DE ADMISIÓN */}
+                      {currentUser.permissions?.viewApplicants && (
+                        <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                           <h5 className="text-slate-400 text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-indigo-500/20 pb-2">
+                            <UserPlus size={14} className="text-indigo-500" /> Postulantes de Admisión <span className="bg-indigo-900/30 text-indigo-400 px-2 rounded-md text-[9px]">{registrations.filter(r => r.type === 'ESTUDIANTE' && (userSearch ? r.name.toLowerCase().includes((userSearch || '').toLowerCase()) : true)).length}</span>
+                          </h5>
+                          <div className="bg-slate-950/30 rounded-[2rem] border border-slate-800/50 p-1 overflow-hidden min-h-[100px]">
+                            {/* VISTA LISTA POSTULANTES */}
+                            {userViewMode === 'LISTA' && (
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                  <tbody className="text-xs font-bold text-slate-300">
+                                    {registrations.filter(r => {
+                                      if (r.type !== 'ESTUDIANTE') return false;
+                                      if (userSearch && !r.name.toLowerCase().includes((userSearch || '').toLowerCase())) return false;
+                                      
+                                      const regDate = new Date(r.rawDate || r.id);
+                                      const start = userDateStart ? new Date(userDateStart) : null;
+                                      const end = userDateEnd ? new Date(userDateEnd) : null;
+                                      if (end) end.setHours(23, 59, 59);
+                                      if ((start && regDate < start) || (end && regDate > end)) return false;
+
+                                      return true;
+                                    }).map(r => (
+                                      <tr key={r.id} className="border-b border-slate-800/50 hover:bg-white/5 transition-colors group">
+                                        <td className="p-4 w-1/3">
+                                          <span className="text-white block mb-1">{r.name}</span>
+                                          <span className="text-[9px] px-2 py-0.5 rounded border uppercase tracking-wider bg-indigo-900/20 text-indigo-400 border-indigo-500/20">{r.type}</span>
+                                        </td>
+                                        <td className="p-4">
+                                          <span className="block text-slate-400">{r.career}</span>
+                                          <span className="text-[9px] text-slate-600 uppercase">{r.level}</span>
+                                        </td>
+                                        <td className="p-4 font-mono text-slate-400">{r.phone}</td>
+                                        <td className="p-4 text-slate-500 text-[10px] font-mono">{r.date}</td>
+                                        <td className="p-4 text-center w-24">
+                                          <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {!currentUser.permissions?.isReadOnly && (
+                                              <button onClick={(e) => { e.stopPropagation(); handleEditClick(r); }} className="p-2 rounded-lg bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all"><Edit3 size={14}/></button>
+                                            )}
+                                            <button onClick={(e) => { e.stopPropagation(); addToast('info', 'Imprimiendo', `Ficha de: ${r.name}`); }} className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all"><Printer size={14}/></button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                            {/* VISTA GRID POSTULANTES */}
+                            {userViewMode === 'GRID' && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
+                                 {registrations.filter(r => {
+                                    if (r.type !== 'ESTUDIANTE') return false;
+                                    if (userSearch && !r.name.toLowerCase().includes((userSearch || '').toLowerCase())) return false;
+                                    const regDate = new Date(r.rawDate || r.id);
+                                    const start = userDateStart ? new Date(userDateStart) : null;
+                                    const end = userDateEnd ? new Date(userDateEnd) : null;
+                                    if (end) end.setHours(23, 59, 59);
+                                    if ((start && regDate < start) || (end && regDate > end)) return false;
+                                    return true;
+                                  }).map(r => (
+                                    <div key={r.id} className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-indigo-500/30 transition-all">
+                                      <div className="flex justify-between items-start mb-4">
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white bg-indigo-600">
+                                          <UserPlus size={20}/>
+                                        </div>
+                                        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded border ${r.status === 'VALIDADO' ? 'bg-green-900/20 text-green-400 border-green-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>{r.status}</span>
+                                      </div>
+                                      <div>
+                                        <h4 className="text-white font-bold text-sm mb-1 truncate">{r.name}</h4>
+                                        <p className="text-slate-500 text-xs mb-2">{r.career}</p>
+                                      </div>
+                                      <div className="flex gap-2 mt-auto pt-4 border-t border-slate-800">
+                                        {!currentUser.permissions?.isReadOnly ? (
+                                          <button onClick={() => handleEditClick(r)} className="flex-1 py-2 rounded-lg bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider hover:bg-indigo-600 transition-all flex items-center justify-center gap-2">
+                                            <Edit3 size={12} /> Editar
+                                          </button>
+                                        ) : (
+                                          <button disabled className="flex-1 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-600 text-[10px] font-black uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2">
+                                            <Lock size={12} /> Protegido
+                                          </button>
+                                        )}
+                                        <button onClick={() => addToast('info', 'Imprimiendo', `Ficha de: ${r.name}`)} className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all">
+                                          <Printer size={16} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* SECCIÓN SOLICITUDES MOODLE (SOLO SI TIENE PERMISO) */}
+                      {currentUser.permissions?.viewMoodle && (
+                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+                           <h5 className="text-slate-400 text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-orange-500/20 pb-2">
+                            <BookPlus size={14} className="text-orange-500" /> Solicitudes Moodle <span className="bg-orange-900/30 text-orange-400 px-2 rounded-md text-[9px]">{registrations.filter(r => r.type === 'MOODLE' && (userSearch ? r.name.toLowerCase().includes((userSearch || '').toLowerCase()) : true)).length}</span>
+                          </h5>
+                          <div className="bg-slate-950/30 rounded-[2rem] border border-slate-800/50 p-1 overflow-hidden min-h-[100px]">
+                             {/* VISTA LISTA MOODLE */}
+                             {userViewMode === 'LISTA' && (
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                  <tbody className="text-xs font-bold text-slate-300">
+                                    {registrations.filter(r => {
+                                      if (r.type !== 'MOODLE') return false;
+                                      if (userSearch && !r.name.toLowerCase().includes((userSearch || '').toLowerCase())) return false;
+                                      const regDate = new Date(r.rawDate || r.id);
+                                      const start = userDateStart ? new Date(userDateStart) : null;
+                                      const end = userDateEnd ? new Date(userDateEnd) : null;
+                                      if (end) end.setHours(23, 59, 59);
+                                      if ((start && regDate < start) || (end && regDate < end)) return false;
+
+                                      return true;
+                                    }).map(r => (
+                                      <tr key={r.id} className="border-b border-slate-800/50 hover:bg-white/5 transition-colors group">
+                                        <td className="p-4 w-1/3">
+                                          <span className="text-white block mb-1">{r.name}</span>
+                                          <span className="text-[9px] px-2 py-0.5 rounded border uppercase tracking-wider bg-orange-900/20 text-orange-400 border-orange-500/20">{r.type}</span>
+                                        </td>
+                                        <td className="p-4">
+                                          <span className="block text-slate-400">{r.career}</span>
+                                          <span className="text-[9px] text-slate-600 uppercase">{r.level}</span>
+                                        </td>
+                                        <td className="p-4 font-mono text-slate-400">{r.phone}</td>
+                                        <td className="p-4 text-slate-500 text-[10px] font-mono">{r.date}</td>
+                                        <td className="p-4 text-center w-24">
+                                          <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {!currentUser.permissions?.isReadOnly && (
+                                              <button onClick={() => handleEditClick(r)} className="p-2 rounded-lg bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all"><Edit3 size={14}/></button>
+                                            )}
+                                            <button onClick={() => addToast('info', 'Imprimiendo', `Ficha Moodle: ${r.name}`)} className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all"><Printer size={14}/></button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                            {/* VISTA GRID MOODLE */}
+                            {userViewMode === 'GRID' && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
+                                 {registrations.filter(r => {
+                                    if (r.type !== 'MOODLE') return false;
+                                    if (userSearch && !r.name.toLowerCase().includes((userSearch || '').toLowerCase())) return false;
+                                    const regDate = new Date(r.rawDate || r.id);
+                                    const start = userDateStart ? new Date(userDateStart) : null;
+                                    const end = userDateEnd ? new Date(userDateEnd) : null;
+                                    if (end) end.setHours(23, 59, 59);
+                                    if ((start && regDate < start) || (end && regDate < end)) return false;
+                                    return true;
+                                  }).map(r => (
+                                    <div key={r.id} className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-orange-500/30 transition-all">
+                                      <div className="flex justify-between items-start mb-4">
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white bg-orange-600">
+                                          <BookPlus size={20}/>
+                                        </div>
+                                        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded border ${r.status === 'VALIDADO' ? 'bg-green-900/20 text-green-400 border-green-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>{r.status}</span>
+                                      </div>
+                                      <div>
+                                        <h4 className="text-white font-bold text-sm mb-1 truncate">{r.name}</h4>
+                                        <p className="text-slate-500 text-xs mb-2">{r.career}</p>
+                                      </div>
+                                      <div className="flex gap-2 mt-auto pt-4 border-t border-slate-800">
+                                        {!currentUser.permissions?.isReadOnly ? (
+                                          <button onClick={() => handleEditClick(r)} className="flex-1 py-2 rounded-lg bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider hover:bg-orange-600 transition-all flex items-center justify-center gap-2">
+                                            <Edit3 size={12} /> Editar
+                                          </button>
+                                        ) : (
+                                          <button disabled className="flex-1 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-600 text-[10px] font-black uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2">
+                                            <Lock size={12} /> Protegido
+                                          </button>
+                                        )}
+                                        <button onClick={() => addToast('info', 'Imprimiendo', `Ficha Moodle: ${r.name}`)} className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all">
+                                          <Printer size={16} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {!currentUser.permissions?.viewApplicants && !currentUser.permissions?.viewMoodle && currentUser.type !== 'DOCENTE' && currentUser.type !== 'ESTUDIANTE' && currentUser.type !== 'MOODLE' && (
+                        <div className="p-10 text-center border-t border-slate-800 mt-6">
+                          <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-600">
+                            <Lock size={24} />
+                          </div>
+                          <h4 className="text-slate-400 font-bold text-sm uppercase tracking-widest">Sin Permisos de Visualización</h4>
+                          <p className="text-slate-600 text-xs mt-2 max-w-xs mx-auto">Su perfil no tiene acceso asignado para ver listas de postulantes o alumnos Moodle. Contacte a administración.</p>
+                        </div>
+                      )}
+
+                      {/* CURSOS DOCENTE */}
+                      {currentUser.type === 'DOCENTE' && (
+                        <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 border-b border-slate-800 pb-8">
+                           <div className="flex justify-between items-center mb-4">
+                              <h5 className="text-slate-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                <Library size={14} className="text-yellow-500" /> Mis Cursos <span className="bg-yellow-900/30 text-yellow-400 px-2 rounded-md text-[9px]">{courses.filter(c => c.instructorId === currentUser.id).length}</span>
+                              </h5>
+                              <button onClick={() => { setEditingCourse(null); setShowCourseModal(true); }} className="px-4 py-2 rounded-lg bg-yellow-600/10 text-yellow-500 border border-yellow-500/20 hover:bg-yellow-600 hover:text-white transition-all text-[10px] font-black uppercase tracking-wider flex items-center gap-2">
+                                 <PlusCircle size={14} /> Crear Curso
+                              </button>
+                           </div>
+                           
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {courses.filter(c => c.instructorId === currentUser.id).map(course => (
+                                 <div key={course.id} className="bg-slate-900 border border-slate-800 p-5 rounded-2xl group hover:border-yellow-500/30 transition-all relative overflow-hidden">
+                                    <div className="flex justify-between items-start mb-2">
+                                       <div className="p-2 bg-yellow-600/20 rounded-lg text-yellow-500"><BookOpenCheck size={18} /></div>
+                                       <button onClick={() => {if(window.confirm('¿Borrar curso?')) deleteCourse(course.id)}} className="text-slate-600 hover:text-red-500"><Trash2 size={14} /></button>
+                                    </div>
+                                    <h4 className="text-white font-bold text-sm mb-1">{course.title}</h4>
+                                    <p className="text-slate-500 text-xs line-clamp-2">{course.description}</p>
+                                    <div className="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center">
+                                       <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1"><Users size={10}/> {course.students || 0} alumnos</span>
+                                       <button onClick={() => handleCourseEditClick(course)} className="text-[10px] font-bold text-yellow-500 hover:text-white flex items-center gap-1"><Edit3 size={10}/> Editar</button>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                      )}
+                      
+                      {/* CURSOS ESTUDIANTE (OFERTA) */}
+                      {(currentUser.type === 'ESTUDIANTE' || currentUser.type === 'MOODLE') && (
+                        <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 border-b border-slate-800 pb-8">
+                           <h5 className="text-slate-400 text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+                              <Library size={14} className="text-blue-500" /> Oferta Académica Disponible
+                           </h5>
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {courses.map(course => {
+                                 const isEnrolled = currentUser.enrolledCourses?.includes(course.id);
+                                 return (
+                                   <div key={course.id} className={`border p-5 rounded-2xl transition-all relative overflow-hidden ${isEnrolled ? 'bg-blue-900/10 border-blue-500/30' : 'bg-slate-900 border-slate-800 hover:border-slate-600'}`}>
+                                      {isEnrolled && <div className="absolute top-0 right-0 p-3"><CheckCircle size={16} className="text-blue-500" /></div>}
+                                      <h4 className="text-white font-bold text-sm mb-1">{course.title}</h4>
+                                      <p className="text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">{course.instructor}</p>
+                                      <p className="text-slate-500 text-xs mb-4 line-clamp-2">{course.description}</p>
+                                      <button 
+                                        onClick={() => !isEnrolled && enrollStudent(course.id)}
+                                        disabled={isEnrolled}
+                                        className={`w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 ${isEnrolled ? 'bg-slate-800 text-slate-500 cursor-default' : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20'}`}
+                                      >
+                                        {isEnrolled ? 'Inscrito' : 'Inscribirse'}
+                                      </button>
+                                   </div>
+                                 );
+                              })}
+                           </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500 uppercase font-black tracking-widest mt-6">
+                        <a href="https://modelstudio.sbs" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 flex items-center gap-2 transition-all">
+                           <ExternalLink size={12} /> Ingresar al Data Center
+                        </a>
+                      </div>
+                    </div>
+                  </Modal>
+                )}
+
+                {/* --- PANEL ADMINISTRATIVO MAESTRO --- */}
+                {showAdminModal && (
+                  <Modal onClose={() => { setShowAdminModal(false); closeAllSessions(); }} title="Acceso Maestro" accent="red" wide zIndex="z-[9999]">
+                    <div className={`bg-slate-900 border border-slate-700 rounded-[2.5rem] w-full ${isAdminLoggedIn ? 'max-w-7xl' : 'max-w-md'} overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-200 my-auto`}>
+                      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-600 via-orange-500 to-red-700"></div>
+                      <button onClick={() => { setShowAdminModal(false); closeAllSessions(); }} className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-full z-10"><X size={28} /></button>
+                      
+                      {!isAdminLoggedIn ? (
+                        <div className="p-12 text-center">
+                          <div className="w-20 h-20 bg-red-600/10 rounded-2xl mx-auto mb-6 flex items-center justify-center text-red-500 border border-red-500/20"><ShieldAlert size={40} /></div>
+                          <h3 className="text-3xl font-black text-white mb-2 uppercase">Acceso Maestro</h3>
+                          <form className="space-y-4 mt-8" onSubmit={handleAdminPanelLogin}>
+                            <div className="relative group"><Mail className="absolute left-4 top-3.5 text-slate-500" size={20} /><input type="email" required placeholder="Usuario Admin" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white text-sm" value={adminCredentials.email} onChange={(e) => setAdminCredentials({...adminCredentials, email: e.target.value})} /></div>
+                            <div className="relative group"><ShieldAlert className="absolute left-4 top-3.5 text-slate-500" size={20} /><input type="password" required placeholder="Contraseña" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white text-sm" value={adminCredentials.password} onChange={(e) => setAdminCredentials({...adminCredentials, password: e.target.value})} /></div>
+                            <button disabled={isSubmitting} className="w-full bg-red-600 text-white font-black py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-red-500 transition-all uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-wait">
+                                {isSubmitting ? <><Loader2 className="animate-spin" size={18}/> Verificando...</> : <>Desbloquear Sistema <ArrowRight size={18} /></>}
+                            </button>
+                          </form>
+                        </div>
+                      ) : (
+                        <div className="p-8 md:p-12" id="printable-area">
+                          <div className="hidden print-header">
+                             <h1 className="text-3xl font-black mb-1">REPORTE ACADÉMICO ITSO OBERMAIER</h1>
+                             <p className="text-sm font-bold uppercase tracking-widest text-gray-600">Base de Datos Centralizada</p>
+                          </div>
+                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 no-print">
+                            <div className="flex-1">
+                              <h3 className="text-4xl font-black text-white flex items-center gap-4 tracking-tighter uppercase mb-2"><Database className="text-red-500" /> Auditoría Central</h3>
+                              {/* TABS DE VISTA - DASHBOARD TOGGLE */}
+                              <div className="inline-flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+                                <button onClick={() => setAdminViewMode('REGISTROS')} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${adminViewMode === 'REGISTROS' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                                  <TableIcon size={16} /> Monitor de Registros
+                                </button>
+                                <button onClick={() => setAdminViewMode('VALIDACION')} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${adminViewMode === 'VALIDACION' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-500 hover:text-white'}`}>
+                                  <ShieldCheck size={16} /> Gestión de Accesos
+                                </button>
+                                <button onClick={() => setAdminViewMode('CURSOS')} className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${adminViewMode === 'CURSOS' ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-900/40' : 'text-slate-500 hover:text-white'}`}>
+                                  <Library size={16} /> Malla Curricular
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button onClick={handlePrint} className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-all text-xs uppercase tracking-widest border border-slate-700"><Printer size={18} /> Imprimir</button>
+                              <button onClick={() => { setIsAdminLoggedIn(false); setShowAdminModal(false); }} className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-red-600/10 text-red-500 border border-red-500/20 hover:bg-red-600 hover:text-white transition-all text-xs font-black uppercase tracking-widest"><LogOut size={16} /> Salir</button>
+                            </div>
+                          </div>
+                          
+                          <div className="no-print space-y-4 mb-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                              <div className="lg:col-span-2 relative group"><Search className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-red-500 transition-colors" size={20} /><input type="text" placeholder="Buscar por nombre, celular..." className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none input-glass text-white transition-all text-sm" value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} /></div>
+                              <div className="relative group"><CalendarRange className="absolute left-4 top-4 text-slate-500" size={18} /><input type="date" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none input-glass text-white text-sm" value={adminDateStart} onChange={(e) => setAdminDateStart(e.target.value)} /></div>
+                              <div className="relative group"><CalendarRange className="absolute left-4 top-4 text-slate-500" size={18} /><input type="date" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none input-glass text-white text-sm" value={adminDateEnd} onChange={(e) => setAdminDateEnd(e.target.value)} /></div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 bg-slate-950/40 p-2 rounded-[1.5rem] border border-slate-800 w-fit">
+                              {[
+                                { id: 'TODOS', label: 'Todo', icon: <ListFilter size={16}/>, count: registrations.length },
+                                { id: 'ESTUDIANTE', label: 'Admisión 2026', icon: <UserCheck size={16}/>, count: registrations.filter(r => r.type === 'ESTUDIANTE').length },
+                                { id: 'MOODLE', label: 'Moodle', icon: <MoodleIcon className="w-4 h-4"/>, count: registrations.filter(r => r.type === 'MOODLE').length },
+                                { id: 'DOCENTE', label: 'Docentes', icon: <Briefcase size={16}/>, count: registrations.filter(r => r.type === 'DOCENTE').length }
+                              ].map((filter) => (
+                                <button key={filter.id} onClick={() => setAdminFilter(filter.id)} className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-3 transition-all uppercase tracking-widest ${adminFilter === filter.id ? 'bg-red-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>{filter.icon} {filter.label} <span className={`px-2 py-0.5 rounded-md text-[10px] ${adminFilter === filter.id ? 'bg-white/20' : 'bg-slate-900'}`}>{filter.count}</span></button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* VISTA 1: REGISTROS DE DATOS (TABLA) */}
+                          {adminViewMode === 'REGISTROS' && (
+                            <div className="bg-slate-950/50 rounded-[2rem] border border-slate-800 overflow-hidden shadow-inner print:border-none print:shadow-none animate-in fade-in slide-in-from-bottom-4 duration-300">
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse min-w-[1100px] print:min-w-full">
+                                  <thead><tr className="bg-slate-900/80 border-b border-slate-800 print:bg-gray-100"><th className="p-6 text-xs font-black text-slate-500 uppercase tracking-widest w-[160px] print:text-black">Origen</th><th className="p-6 text-xs font-black text-slate-500 uppercase tracking-widest print:text-black">Datos Personales</th><th className="p-6 text-xs font-black text-slate-500 uppercase tracking-widest print:text-black">Interés Académico</th><th className="p-6 text-xs font-black text-slate-500 uppercase tracking-widest w-[180px] print:text-black">Fecha Registro</th><th className="p-6 text-xs font-black text-slate-500 uppercase tracking-widest text-center w-[150px] no-print">Acciones</th></tr></thead>
+                                  <tbody>
+                                    {filteredRegistrations.map((reg) => (
+                                        <tr key={reg.id} className="border-b border-slate-900 hover:bg-white/5 transition-all group print:border-gray-300">
+                                          <td className="p-6 align-top">
+                                            <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest flex items-center gap-2 w-fit shadow-lg category-tag uppercase ${reg.type === 'ESTUDIANTE' ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : reg.type === 'DOCENTE' ? 'bg-amber-600/20 text-amber-400 border border-amber-500/20' : 'bg-orange-600/20 text-orange-400 border border-orange-500/20'}`}>{reg.type === 'ESTUDIANTE' ? 'ADMISIÓN' : reg.type}</span>
+                                          </td>
+                                          <td className="p-6 align-top"><p className="text-white font-black text-lg mb-2 tracking-tight print:text-black">{reg.name}</p><div className="flex items-center gap-3 text-slate-400 text-xs print:text-black"><Phone size={14} className="text-blue-500" /><span className="font-mono">{reg.phone}</span></div></td>
+                                          <td className="p-6 align-top">
+                                            <div className="bg-slate-900/60 rounded-2xl border border-slate-800 p-4 space-y-2 print:border-gray-200">
+                                              {reg.type === 'DOCENTE' && reg.specialties && reg.specialties.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1">
+                                                  {reg.specialties.map((s, i) => (
+                                                    <span key={`${reg.id}-spec-${i}`} className="px-2 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] rounded font-bold uppercase">{s}</span>
+                                                  ))}
+                                                </div>
+                                              ) : (
+                                                <p className="text-white font-bold text-xs print:text-black">{reg.level}</p>
+                                              )}
+                                              {reg.notes && <p className="text-[10px] text-slate-400 italic border-t border-slate-800 pt-2 mt-2">"{reg.notes}"</p>}
+                                            </div>
+                                          </td>
+                                          <td className="p-6 align-top"><div className="flex items-center gap-2 text-xs text-slate-500 font-mono print:text-black"><Calendar size={14}/> {reg.date}</div></td>
+                                          <td className="p-6 align-top text-center no-print"><div className="flex items-center justify-center gap-2"><button onClick={() => handleEditClick(reg)} className="p-3 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/20 hover:bg-purple-600 hover:text-white transition-all"><Edit3 size={16} /></button><button onClick={() => deleteRegistration(reg.id)} className="p-3 rounded-xl bg-red-600/5 text-red-500 border border-red-500/10 hover:bg-red-600 hover:text-white transition-all"><Trash2 size={16} /></button></div></td>
+                                        </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* VISTA 2: GESTIÓN DE ACCESOS (GRID CARDS) */}
+                          {adminViewMode === 'VALIDACION' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                              {filteredRegistrations.map((reg) => (
+                                <div key={reg.id} className={`p-6 rounded-3xl border transition-all relative overflow-hidden group ${reg.status === 'VALIDADO' ? 'bg-green-900/10 border-green-500/30' : 'bg-slate-900 border-slate-800'}`}>
+                                  {reg.status === 'VALIDADO' && <div className="absolute top-0 right-0 p-4"><CheckCircle className="text-green-500" /></div>}
+                                  
+                                  <div className="flex items-center gap-4 mb-6">
+                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${reg.type === 'ESTUDIANTE' ? 'bg-blue-600/20 border-blue-500/30 text-blue-400' : reg.type === 'MOODLE' ? 'bg-orange-600/20 border-orange-500/30 text-orange-400' : 'bg-amber-600/20 border-amber-500/30 text-amber-400'}`}>
+                                       <User size={24} />
+                                     </div>
+                                     <div>
+                                       <h4 className="text-white font-bold text-lg leading-tight truncate w-40">{reg.name}</h4>
+                                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{reg.type === 'ESTUDIANTE' ? 'ADMISIÓN 2026' : reg.type}</span>
+                                     </div>
+                                  </div>
+
+                                  <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3 mb-6">
+                                     <div className="flex justify-between items-center text-xs">
+                                       <span className="text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2"><User size={12}/> Usuario</span>
+                                       <span className="text-white font-mono">{reg.name}</span>
+                                     </div>
+                                     <div className="flex justify-between items-center text-xs border-t border-slate-800 pt-2">
+                                       <span className="text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2"><Key size={12}/> Clave de Acceso</span>
+                                       <span className={`font-mono text-xs ${reg.password ? 'text-green-400 bg-green-900/20 px-2 py-0.5 rounded' : 'text-slate-600 italic'}`}>{reg.password || 'Pendiente'}</span>
+                                     </div>
+                                     
+                                     {/* DETALLE DE CARRERA PARA ESTUDIANTES/MOODLE */}
+                                     {(reg.type === 'MOODLE' || reg.type === 'ESTUDIANTE') && (
+                                       <div className="flex justify-between items-center text-xs border-t border-slate-800 pt-2">
+                                         <span className="text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2">
+                                           {reg.type === 'ESTUDIANTE' ? <ClipboardList size={12}/> : <GraduationCap size={12}/>} 
+                                           {reg.type === 'ESTUDIANTE' ? 'Interés' : 'Carrera'}
+                                         </span>
+                                         <span className="text-white font-mono text-right">
+                                           {reg.career || 'General'}
+                                           <br/>
+                                           <span className={`text-[9px] font-black uppercase tracking-wider ${reg.type === 'ESTUDIANTE' ? 'text-blue-400' : 'text-slate-400'}`}>
+                                             {reg.type === 'ESTUDIANTE' ? 'POSTULANTE' : reg.level}
+                                           </span>
+                                         </span>
+                                       </div>
+                                     )}
+                                  </div>
+
+                                  <div className="flex gap-2">
+                                    {reg.status === 'VALIDADO' && (
+                                       <button onClick={() => handlePermissionsClick(reg)} className="p-4 rounded-xl bg-indigo-600/10 text-indigo-500 hover:bg-indigo-600 hover:text-white border border-indigo-500/20 transition-all flex items-center justify-center shadow-lg" title="Configurar Privilegios">
+                                         <FileCog size={16} />
+                                       </button>
+                                    )}
+                                    {reg.status === 'VALIDADO' && (
+                                       <button onClick={() => regenerateUserPassword(reg.id)} className="p-4 rounded-xl bg-orange-600/10 text-orange-500 hover:bg-orange-600 hover:text-white border border-orange-500/20 transition-all flex items-center justify-center shadow-lg" title="Regenerar Clave">
+                                         <RefreshCw size={16} />
+                                       </button>
+                                    )}
+                                    <button onClick={() => toggleValidation(reg.id)} className={`flex-1 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg ${reg.status === 'VALIDADO' ? 'bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white border border-red-500/20' : 'bg-green-600 text-white hover:bg-green-500 shadow-green-900/20'}`}>
+                                      {reg.status === 'VALIDADO' ? <><XCircle size={16} /> Revocar</> : <><CheckSquare size={16} /> Validar</>}
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* VISTA 3: MALLA CURRICULAR (ADMIN) */}
+                          {adminViewMode === 'CURSOS' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                              <div className="flex justify-between items-center mb-6">
+                                <h4 className="text-slate-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                  <Library size={14} className="text-yellow-500" /> Catálogo de Cursos Global
+                                </h4>
+                                <button onClick={() => { setEditingCourse(null); setShowCourseModal(true); }} className="px-5 py-2.5 rounded-xl bg-yellow-600 text-white font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-yellow-900/20 hover:bg-yellow-500 transition-all">
+                                  <PlusCircle size={16} /> Nuevo Curso
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {courses.map(course => (
+                                   <div key={course.id} className="bg-slate-950/50 border border-slate-800 p-6 rounded-3xl group hover:border-yellow-500/30 transition-all relative overflow-hidden">
+                                      <div className="flex justify-between items-start mb-4">
+                                         <div className="p-3 bg-yellow-600/10 rounded-2xl text-yellow-500 border border-yellow-500/20"><BookOpenCheck size={20} /></div>
+                                         <div className="flex gap-2">
+                                           <button onClick={() => handleCourseEditClick(course)} className="text-slate-500 hover:text-white transition-colors"><Edit3 size={16} /></button>
+                                           <button onClick={() => {if(window.confirm('¿Borrar curso permanentemente?')) deleteCourse(course.id)}} className="text-slate-500 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+                                         </div>
+                                      </div>
+                                      <h4 className="text-white font-bold text-lg mb-2 leading-tight">{course.title}</h4>
+                                      <p className="text-slate-500 text-xs line-clamp-3 mb-4">{course.description}</p>
+                                      <div className="pt-4 border-t border-slate-800 flex justify-between items-center">
+                                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1"><User size={12}/> {course.instructor}</span>
+                                         <span className="text-[10px] font-mono text-yellow-500 bg-yellow-900/10 px-2 py-1 rounded border border-yellow-500/10">{course.students || 0} inscritos</span>
+                                      </div>
+                                   </div>
+                                ))}
+                                {courses.length === 0 && (
+                                  <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-800 rounded-3xl text-slate-600 text-sm font-bold uppercase tracking-wider">
+                                    No hay cursos registrados en el sistema.
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Modal>
+                )}
+
+                {/* --- MODAL EDICIÓN ADMIN --- */}
+                {showEditModal && editingUser && (
+                  <Modal onClose={() => setShowEditModal(false)} title="Gestión de Perfil" accent="purple">
+                    <form onSubmit={saveEditedUser} className="space-y-6">
+                      <div className="space-y-4">
+                        <label className="block"><span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Nombre Completo</span><input type="text" className="w-full mt-1 bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass" value={editingUser.name} onChange={(e) => setEditingUser({...editingUser, name: e.target.value})} /></label>
+                        <div className="grid grid-cols-2 gap-4">
+                           <label className="block"><span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Rol Asignado</span><select className="w-full mt-1 bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass appearance-none" value={editingUser.type} onChange={(e) => setEditingUser({...editingUser, type: e.target.value})}><option value="ESTUDIANTE">ESTUDIANTE</option><option value="DOCENTE">DOCENTE</option><option value="MOODLE">MOODLE</option></select></label>
+                          <label className="block"><span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Estado</span><select className={`w-full mt-1 border px-4 py-3 rounded-xl outline-none input-glass appearance-none font-bold ${editingUser.status === 'VALIDADO' ? 'text-green-400 border-green-500/30 bg-green-900/10' : 'text-yellow-400 border-yellow-500/30 bg-yellow-900/10'}`} value={editingUser.status} onChange={(e) => setEditingUser({...editingUser, status: e.target.value})}><option value="PENDIENTE">PENDIENTE</option><option value="VALIDADO">VALIDADO</option></select></label>
+                        </div>
+                        <label className="block"><span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Nivel Académico</span><input type="text" className="w-full mt-1 bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass" value={editingUser.level} onChange={(e) => setEditingUser({...editingUser, level: e.target.value})} /></label>
+                        <label className="block"><span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Preferencias / Notas</span><textarea className="w-full mt-1 bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-xl outline-none input-glass h-24 resize-none" placeholder="Añadir observaciones para el usuario..." value={editingUser.notes || ''} onChange={(e) => setEditingUser({...editingUser, notes: e.target.value})} /></label>
+                      </div>
+                      <div className="flex gap-4 pt-4 border-t border-slate-800">
+                        <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-all font-bold text-xs uppercase tracking-widest">Cancelar</button>
+                        <button disabled={isSubmitting} type="submit" className="flex-1 py-3 rounded-xl bg-purple-600 text-white hover:bg-purple-500 transition-all font-bold text-xs uppercase tracking-widest shadow-lg shadow-purple-900/20 flex items-center justify-center gap-2">
+                           {isSubmitting ? <Loader2 className="animate-spin" size={16}/> : <><Save size={16} /> Guardar Cambios</>}
+                        </button>
+                      </div>
+                    </form>
+                  </Modal>
+                )}
+
+                {/* --- MODAL GESTIÓN DE PERMISOS --- */}
+                {showPermissionsModal && permissionsUser && (
+                  <Modal onClose={() => setShowPermissionsModal(false)} title="Configurar Privilegios" accent="indigo">
+                    <form onSubmit={savePermissions} className="space-y-8">
+                      <div className="bg-indigo-900/10 p-4 rounded-2xl border border-indigo-500/20 flex items-center gap-4">
+                        <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg">
+                          {permissionsUser.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="text-white font-bold text-lg">{permissionsUser.name}</h4>
+                          <p className="text-xs text-indigo-400 font-bold uppercase tracking-wider">{permissionsUser.type}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-6">
+                        <div>
+                          <h5 className="text-slate-400 text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2"><Database size={14} /> Ámbito de Datos</h5>
+                          <div className="grid grid-cols-2 gap-4">
+                            <label className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between group ${permissionsUser.permissions?.viewApplicants ? 'bg-blue-600/20 border-blue-500/50' : 'bg-slate-950 border-slate-800 hover:border-slate-600'}`}>
+                              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Ver Postulantes</span>
+                              <input type="checkbox" className="hidden" checked={permissionsUser.permissions?.viewApplicants || false} onChange={(e) => setPermissionsUser({ ...permissionsUser, permissions: { ...permissionsUser.permissions, viewApplicants: e.target.checked } })} />
+                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${permissionsUser.permissions?.viewApplicants ? 'border-blue-500 bg-blue-500' : 'border-slate-600'}`}>
+                                {permissionsUser.permissions?.viewApplicants && <CheckCircle size={12} className="text-white" />}
+                              </div>
+                            </label>
+                            <label className={`cursor-pointer p-4 rounded-xl border transition-all flex items-center justify-between group ${permissionsUser.permissions?.viewMoodle ? 'bg-orange-600/20 border-orange-500/50' : 'bg-slate-950 border-slate-800 hover:border-slate-600'}`}>
+                              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Ver Moodle</span>
+                              <input type="checkbox" className="hidden" checked={permissionsUser.permissions?.viewMoodle || false} onChange={(e) => setPermissionsUser({ ...permissionsUser, permissions: { ...permissionsUser.permissions, viewMoodle: e.target.checked } })} />
+                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${permissionsUser.permissions?.viewMoodle ? 'border-orange-500 bg-orange-500' : 'border-slate-600'}`}>
+                                {permissionsUser.permissions?.viewMoodle && <CheckCircle size={12} className="text-white" />}
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h5 className="text-slate-400 text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2"><Shield size={14} /> Nivel de Control</h5>
+                          <div className="bg-slate-950 rounded-2xl p-1.5 flex border border-slate-800">
+                            <button type="button" onClick={() => setPermissionsUser({ ...permissionsUser, permissions: { ...permissionsUser.permissions, isReadOnly: true, canEdit: false } })} className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${permissionsUser.permissions?.isReadOnly ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
+                              <Eye size={14} /> Solo Lectura
+                            </button>
+                            <button type="button" onClick={() => setPermissionsUser({ ...permissionsUser, permissions: { ...permissionsUser.permissions, isReadOnly: false, canEdit: true } })} className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${!permissionsUser.permissions?.isReadOnly ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
+                              <FileEdit size={14} /> Control Total
+                            </button>
+                          </div>
+                          <p className="text-[10px] text-slate-500 mt-3 text-center italic">
+                            {permissionsUser.permissions?.isReadOnly 
+                              ? "El usuario podrá ver e imprimir listados, pero NO modificar ni eliminar registros." 
+                              : "ADVERTENCIA: El usuario tendrá permisos completos para editar y eliminar información sensible."}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-indigo-500 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2">
+                        <ShieldCheck size={16} /> Guardar Configuración
+                      </button>
+                    </form>
+                  </Modal>
+                )}
+
+                {/* --- MODAL CURSO (DOCENTE/ADMIN) --- */}
+                {showCourseModal && (
+                   <Modal onClose={() => { setShowCourseModal(false); setEditingCourse(null); }} title={editingCourse ? "Editar Curso" : "Nuevo Curso Académico"} accent="yellow">
+                      <form className="space-y-4" onSubmit={saveCourse}>
+                         <div className="relative group">
+                            <span className="absolute left-4 top-3.5 text-slate-500"><BookOpen size={18} /></span>
+                            <input type="text" name="title" required defaultValue={editingCourse?.title || ''} placeholder="Título del Curso" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white" />
+                         </div>
+                         <div className="relative group">
+                            <span className="absolute left-4 top-3.5 text-slate-500"><User size={18} /></span>
+                            <input type="text" name="instructor" required defaultValue={editingCourse?.instructor || currentUser?.name || ''} placeholder="Instructor Responsable" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white" />
+                         </div>
+                         <div className="relative group">
+                            <span className="absolute left-4 top-3.5 text-slate-500"><FileText size={18} /></span>
+                            <textarea name="description" required defaultValue={editingCourse?.description || ''} placeholder="Descripción breve del contenido..." className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white h-24 resize-none" />
+                         </div>
+                         <div className="relative group">
+                            <span className="absolute left-4 top-3.5 text-slate-500"><Calendar size={18} /></span>
+                            <input type="text" name="schedule" required defaultValue={editingCourse?.schedule || ''} placeholder="Horario (Ej: Lun-Mie 14:00)" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white" />
+                         </div>
+                         
+                         {/* NUEVOS CAMPOS: ENLACES Y MULTIMEDIA */}
+                         <div className="pt-4 border-t border-slate-800">
+                           <p className="text-yellow-500 text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2"><LinkIcon size={14}/> Recursos Digitales</p>
+                           <div className="space-y-4">
+                             <div className="relative group">
+                                <span className="absolute left-4 top-3.5 text-slate-500"><LinkIcon size={18} /></span>
+                                <input type="url" name="fileLink" defaultValue={editingCourse?.fileLink || ''} placeholder="Enlace a Google Drive / Dropbox (Opcional)" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white text-xs font-mono" />
+                             </div>
+                             <div className="relative group">
+                                <span className="absolute left-4 top-3.5 text-slate-500"><Video size={18} /></span>
+                                <textarea name="multimediaEmbed" defaultValue={editingCourse?.multimediaEmbed || ''} placeholder="Pegar código <iframe> de YouTube, Vimeo o Genially aquí..." className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white h-24 resize-none text-xs font-mono" />
+                             </div>
+                           </div>
+                         </div>
+
+                         <button disabled={isSubmitting} className="w-full bg-yellow-600 text-white font-bold py-3 rounded-xl hover:bg-yellow-500 transition-all mt-4 disabled:opacity-50">
+                            {isSubmitting ? <Loader2 className="animate-spin mx-auto"/> : (editingCourse ? "Guardar Cambios" : "Publicar Curso")}
+                         </button>
+                      </form>
+                   </Modal>
+                )}
+
+                {/* --- MODAL AULA VIRTUAL (VISUALIZACIÓN DE CURSO) --- */}
+                {viewingCourse && (
+                  <Modal onClose={() => setViewingCourse(null)} title="Aula Virtual" accent="blue" wide zIndex="z-[500]">
+                     <div className="space-y-8">
+                        {/* CABECERA DEL CURSO */}
+                        <div className="border-b border-slate-800 pb-6">
+                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                            <h2 className="text-3xl md:text-4xl font-black text-white leading-tight">{viewingCourse.title}</h2>
+                            <span className="bg-blue-600/20 text-blue-400 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-blue-500/20">
+                              En Curso
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-6 text-sm text-slate-400">
+                             <span className="flex items-center gap-2"><User size={16} className="text-blue-500"/> {viewingCourse.instructor}</span>
+                             <span className="flex items-center gap-2"><Calendar size={16} className="text-blue-500"/> {viewingCourse.schedule}</span>
+                          </div>
+                        </div>
+
+                        {/* CONTENIDO MULTIMEDIA (SI EXISTE) */}
+                        {viewingCourse.multimediaEmbed ? (
+                          <div className="rounded-2xl overflow-hidden bg-black border border-slate-800 shadow-2xl relative group">
+                             <div className="absolute top-4 left-4 z-10 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-2 animate-pulse">
+                               <div className="w-2 h-2 bg-white rounded-full"></div> En Vivo / Grabación
+                             </div>
+                             <div className="aspect-video w-full" dangerouslySetInnerHTML={{ __html: viewingCourse.multimediaEmbed }} />
+                          </div>
+                        ) : (
+                          <div className="rounded-2xl bg-slate-900 border border-slate-800 p-12 text-center">
+                             <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-600">
+                               <Video size={32} />
+                             </div>
+                             <p className="text-slate-500 font-medium">Este curso aún no tiene contenido multimedia asignado.</p>
+                          </div>
+                        )}
+
+                        {/* DESCRIPCIÓN Y RECURSOS */}
+                        <div className="grid md:grid-cols-3 gap-8">
+                           <div className="md:col-span-2 space-y-4">
+                              <h4 className="text-white font-bold uppercase tracking-widest border-b border-slate-800 pb-2 mb-4 flex items-center gap-2">
+                                <BookOpen size={18} className="text-blue-500"/> Plan de Estudios
+                              </h4>
+                              <p className="text-slate-400 leading-relaxed text-sm whitespace-pre-wrap">
+                                {viewingCourse.description}
+                              </p>
+                           </div>
+                           
+                           <div className="space-y-4">
+                              <h4 className="text-white font-bold uppercase tracking-widest border-b border-slate-800 pb-2 mb-4 flex items-center gap-2">
+                                <Download size={18} className="text-green-500"/> Material
+                              </h4>
+                              {viewingCourse.fileLink ? (
+                                <a 
+                                  href={viewingCourse.fileLink} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="block w-full p-4 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-blue-500 transition-all group"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                     <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400"><LinkIcon size={20}/></div>
+                                     <ExternalLink size={16} className="text-slate-500 group-hover:text-white"/>
+                                  </div>
+                                  <p className="text-white font-bold text-sm mb-1">Recursos del Curso</p>
+                                  <p className="text-slate-500 text-xs">Acceder a carpeta compartida</p>
+                                </a>
+                              ) : (
+                                <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                                   <p className="text-slate-600 text-xs italic">No hay archivos adjuntos.</p>
+                                </div>
+                              )}
+                           </div>
+                        </div>
+                     </div>
+                  </Modal>
+                )}
+
+                {/* --- MODAL LOGIN (Z-INDEX 9999) --- */}
+                {showLoginModal && (
+                  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300 no-print">
+                    <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-md overflow-hidden relative shadow-2xl transform transition-all scale-100">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-red-600 animate-pulse"></div>
+                      <button onClick={() => { setShowLoginModal(false); setIsRedirecting(false); setLoginStatusMessage(''); }} className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-full z-10">
+                        <X size={24} />
+                      </button>
+                      <div className="p-10 relative overflow-hidden">
+                         <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-gradient-to-b from-blue-600/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+                        
+                        <div className="text-center mb-8">
+                          <div className="w-24 h-24 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl mx-auto mb-8 flex items-center justify-center text-white font-black text-4xl shadow-xl border border-slate-700/50 relative group">
+                            <span className="relative z-10">IT</span>
+                            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-slate-900 transition-colors duration-500 ${isRedirecting ? 'bg-yellow-400 animate-pulse' : 'bg-green-500'}`}></div>
+                          </div>
+                          <h3 className="text-3xl font-black text-white mb-1 tracking-tight uppercase">Aula Digital</h3>
+                          <p className="text-slate-400 text-xs font-black uppercase tracking-widest bg-blue-600/10 py-1 rounded-full px-4 inline-block">Plataforma Virtual</p>
+                        </div>
+
+                        {!isRedirecting ? (
+                          <form className="space-y-4 animate-in fade-in duration-500" onSubmit={handleAcademicAccess}>
+                            <div className="space-y-4">
+                              <div className="relative group">
+                                <User className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
+                                <input type="text" required placeholder="Usuario / Correo" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white text-sm font-medium transition-all" value={loginForm.user} onChange={(e) => setLoginForm({...loginForm, user: e.target.value})} />
+                              </div>
+                              <div className="relative group">
+                                <Lock className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
+                                <input type="password" required placeholder="Contraseña / Celular" className="w-full pl-12 pr-4 py-3.5 rounded-xl outline-none input-glass text-white text-sm font-medium transition-all" value={loginForm.pass} onChange={(e) => setLoginForm({...loginForm, pass: e.target.value})} />
+                              </div>
+                            </div>
+                            
+                            {loginStatusMessage && <div className={`text-[10px] font-bold p-3 rounded-lg border text-center ${loginStatusMessage.includes('ERROR') ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'}`}>{loginStatusMessage}</div>}
+
+                            <button disabled={isSubmitting} type="submit" className="group w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3 relative overflow-hidden disabled:opacity-70 disabled:cursor-wait">
+                              {isSubmitting ? (
+                                <><Loader2 className="animate-spin" size={18} /> Procesando...</>
+                              ) : (
+                                <><span className="relative z-10 flex items-center gap-2 uppercase tracking-widest text-xs">Conectar al Portal <ExternalLink size={16} /></span>
+                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div></>
+                              )}
+                            </button>
+                            
+                            <div className="mt-8 border-t border-slate-800 pt-6 text-center">
+                              <p className="text-slate-500 text-[10px] mb-4 uppercase font-black tracking-widest">¿Eres nuevo en la institución?</p>
+                              <button type="button" onClick={() => { setShowLoginModal(false); setShowRegisterModal(true); }} className="relative group w-full">
+                                  <div className="absolute transition-all duration-1000 opacity-50 -inset-px bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] rounded-xl blur-md animate-tilt"></div>
+                                  <div className="relative w-full inline-flex items-center justify-center px-6 py-3.5 text-xs font-black text-white transition-all duration-200 bg-slate-900 rounded-xl border border-slate-700 uppercase tracking-widest">
+                                      Registrar mi Matrícula <Star className="ml-2 text-yellow-400 animate-wiggle" size={16} />
+                                  </div>
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="py-4 animate-in fade-in duration-500 text-center">
+                            <div className="flex justify-center mb-6">
+                              <div className="w-12 h-12 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin"></div>
+                            </div>
+                            <p className="text-white font-bold text-lg mb-2">Validando Credenciales...</p>
+                            <p className="text-slate-500 text-[10px] uppercase font-black tracking-[0.2em]">Accediendo al Sistema</p>
+                            <div className="w-full h-1 bg-slate-800 rounded-full mt-8 overflow-hidden">
+                              <div className="h-full bg-blue-500 rounded-full animate-loading"></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="bg-slate-950/80 p-4 text-center text-[10px] text-slate-500 border-t border-slate-800 flex justify-between items-center px-8 font-black uppercase tracking-widest">
+                        <span>v2.5.0 Stable</span>
+                        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div> System Online</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </ToastContext.Provider>
+            </div>
+          );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
